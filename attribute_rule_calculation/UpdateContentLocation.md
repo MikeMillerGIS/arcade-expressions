@@ -221,7 +221,6 @@ function shift_snapped_features(associated_edits, dX, dY, dZ) {
             lines_already_moved[Count(lines_already_moved)] = associated_edits[line_class_name][i]['globalid']
         }
     }
-    var coord_moved = 0
     var snapped_edits = {};
     var snap_classes = [device_class_name, junction_class_name];
     var updates = []
@@ -257,7 +256,6 @@ function shift_snapped_features(associated_edits, dX, dY, dZ) {
                                 if (IsNan(coordinate[2]) == false) {
                                     coordinate[2] += dZ;
                                 }
-                                coord_moved = coord_moved + 1;
                                 moved = true;
                             }
                             new_geometry[i][j] = coordinate;
@@ -327,8 +325,8 @@ if (has_bit(association_status, 1) == false && has_bit(association_status, 2) ==
 }
 // If the feature geometry has not changed, we can exit early
 var current_shape = Geometry($feature);
-var original_shape = Geometry($feature);
-if (current_shape != original_shape) {
+var original_shape = Geometry($originalFeature);
+if (current_shape == original_shape) {
     return field_value;
 }
 // Get the geometry offset from current and previous.
