@@ -260,24 +260,22 @@ if (Number(container_z) == Number(feature_z)) {
 // Get a dict by class name of the content of the container to determine if the new point is the lowest item
 var content_ids = get_associated_feature_ids(container_feature, "content", [$feature.globalid]);
 
-if (IsEmpty(content_ids)) {
-    return field_value;
-}
-// Get a dict by class name of the other content features
-var container_content_features = get_features(content_ids, false, []);
-if (IsEmpty(container_content_features)) {
-    return field_value;
-}
-// Get the lowest Z of its siblings
-var lowest_z = get_lowest_z(container_content_features);
-
-// If the other features are lower than the edited features, return
-if (lowest_z < feature_z) {
-    if (lowest_z < container_z) {
-        // TODO: If the lowest feature in the container is lower than container, do we adjust?
-        return field_value;
+// Only if there is other content, check to see if current point is the lowest
+if (IsEmpty(content_ids) == false) {
+    // Get a dict by class name of the other content features
+    var container_content_features = get_features(content_ids, false, []);
+    if (IsEmpty(container_content_features) == false) {
+        // Get the lowest Z of its siblings
+        var lowest_z = get_lowest_z(container_content_features);
+        // If the other features are lower than the edited features, return
+        if (lowest_z < feature_z) {
+            if (lowest_z < container_z) {
+                // TODO: If the lowest feature in the container is lower than container, do we adjust?
+                return field_value;
+            }
+            return field_value;
+        }
     }
-    return field_value;
 }
 // Get the containers geometry and adjust the z
 var new_cont_geom = Geometry(container_feature);
