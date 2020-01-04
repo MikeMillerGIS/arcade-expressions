@@ -114,7 +114,7 @@ function pop_empty(dict) {
 // Function to get UN associated features
 function get_associated_feature_ids(feature, association_type, ignore_ids) {
     // feautre(Feature): A feature object used to lookup assoications
-    // association_type(String): Type of assoication to look up
+    // association_type(String): Type of association to look up
     //    Values = content, container, structure
     // ignore_ids(List[Global Ids]): A list of global IDs to ignore and not include in the results
 
