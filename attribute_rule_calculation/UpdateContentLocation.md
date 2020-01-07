@@ -318,7 +318,6 @@ if (has_bit(association_status, 1)) {
 var shift_edits = {};
 // If the feature is a container or a structure, first evaluate moving its associated features
 if (IsEmpty(association_type) == false) {
-    // Get all the features that are attached or content, this is recursive
     var associated_ids = get_associated_feature_ids($feature, association_type, null)
     // Loop over all features and adjust them based on the change in X,Y,Z
     shift_edits = shift_associated_features(associated_ids, dX, dY, dZ);
@@ -333,7 +332,7 @@ return {"result": field_value, "edit": edit_payload};
 
 ```
 
-### Below is probably not needed anymore
+### Below is the version using the association table and recursively finds all contained/attached features
 ```js
 // This rule will update the location of the features in a container or structure is moved
 
