@@ -157,8 +157,4 @@ var att = {
 var new_feat = Feature(null, att);
 return new_feat;
 
-
-
-Guid()
-
 ```
