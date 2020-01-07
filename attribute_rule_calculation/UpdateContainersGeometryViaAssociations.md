@@ -29,6 +29,7 @@ var field_value = $feature.ownedby;
 
 // Get Feature Switch yard, adjust the string literals to match your GDB feature class names
 function get_features_switch_yard(class_name, fields, include_geometry) {
+    var class_name = Split(class_name, '.')[-1];    
     var feature_set = null;
     if (class_name == 'SewerDevice') {
         feature_set = FeatureSetByName($datastore, 'SewerDevice', fields, include_geometry);
