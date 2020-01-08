@@ -11,7 +11,7 @@ To prevent accidental deletion of an asset.
 Using ArcGIS Pro, use the Add Attribute Rule geoprocessing tool to define this rule on a feature class and optionally on a subtype in that feature class.  Use the following values when defining the rule, the other options are not required or depend on your situation.
   
   - **Rule Type:** Constraint
-  - **Triggering Events:** Insert, Delete or Update
+  - **Triggering Events:** Delete
 
 ## Expression Template
 
