@@ -34,7 +34,7 @@ var valid_edit = true;
 var source_geo = Geometry($feature);
 for (var feat in intersected_features) {
     var intersect_geo = Geometry(feat);
-    var shape = Dictionary(Text(orig_geometry));
+    var shape = Dictionary(Text(intersect_geo));
     if (TypeOf(intersect_geo) == 'Polyline') {
         for (var i in shape['paths']) {
             // Check the start point
