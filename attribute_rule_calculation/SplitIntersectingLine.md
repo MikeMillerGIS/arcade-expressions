@@ -1,4 +1,4 @@
-# Rotate Feature by Intersected Line
+# Split intersecting line
 
 This calculation attribute rule split a line when a point is placed
 
@@ -15,7 +15,8 @@ Using ArcGIS Pro, use the Add Attribute Rule geoprocessing tool to define this r
 
 ## Expression Template
 
-This Arcade expression will split a line when a point is placed
+This Arcade expression will split a line when a point is placed.  [Example](./SplitIntersectingLine.zip)
+
 
 
 ```js
@@ -25,9 +26,10 @@ This Arcade expression will split a line when a point is placed
 // This section has the functions and variables that need to be adjusted based on your implementation
 
 // The field the rule is assigned to
-var field_value = 'Feild'//Text($feature.ValueCopied);
+var field_value = $feature.ValueCopied;
 // The line class to split
-var lineClass = FeatureSetByName($datastore, "Line", ["objectid"], true);
+var line_class_name = "Line";
+var line_fs = FeatureSetByName($datastore, "Line", ['*'], true);
 
 // ************* End Section *****************
 
@@ -53,7 +55,18 @@ function compare_coordinate(source_geo, coordinate) {
     return true
 }
 
-var intersecting_lines = Intersects(lineClass, $feature);
+function pop_keys(dict, keys) {
+    var new_dict = {};
+    for (var k in dict) {
+        if (IndexOf(keys, Upper(k)) != -1) {
+            continue
+        }
+        new_dict[k] = dict[k];
+    }
+    return new_dict
+}
+
+var intersecting_lines = Intersects(line_fs, $feature);
 // If no features were found, return the original value
 if (IsEmpty(intersecting_lines) || Count(intersecting_lines) == 0) {
     return field_value;
@@ -62,20 +75,29 @@ var point_geo = Geometry($feature);
 
 var update_features = [];
 var new_features = [];
+
+// Get the first line to get spatial ref, Z info and determine if Zs should be return/interpolated in lines
+// TODO: Handle M's
 var interpolate_z = false;
-for (var feat in intersecting_lines) {
-    var line_geo = Geometry(feat);
+var first_line = First(intersecting_lines);
+var first_geo = Geometry(first_line);
+var first_shape = Dictionary(Text(first_geo));
+var point_coord = null;
+var line_spat_ref = first_geo.spatialReference.wkid;
+
+if (Count(first_shape['paths'][0][0]) >= 3 && IsEmpty(point_geo.Z)) {
+    point_coord = [point_geo.X, point_geo.Y];
+    interpolate_z = true
+} else if (Count(first_shape['paths'][0][0]) >= 3 && IsEmpty(point_geo.Z) == false) {
+    point_coord = [point_geo.X, point_geo.Y, point_geo.Z];
+} else {
+    point_coord = [point_geo.X, point_geo.Y];
+}
+// Loop through lines to split
+for (var line_feature in intersecting_lines) {
+    var line_geo = Geometry(line_feature);
     var line_shape = Dictionary(Text(line_geo));
-    // Handle case where line has Z and Point has Z
-    var point_coord = null;
-    if (Count(line_shape['paths'][0][0]) >= 3 && IsEmpty(point_geo.Z)) {
-        point_coord = [point_geo.X, point_geo.Y];
-        interpolate_z = true
-    } else if (Count(line_shape['paths'][0][0]) >= 3 && IsEmpty(point_geo.Z) == false) {
-        point_coord = [point_geo.X, point_geo.Y, point_geo.Z];
-    } else {
-        point_coord = [point_geo.X, point_geo.Y];
-    }
+
     // If the point is at the start or end, skip splitting line
     if (compare_coordinate(point_geo, line_shape['paths'][0][0]) || compare_coordinate(point_geo, line_shape['paths'][-1][-1])) {
         continue;
@@ -136,8 +158,50 @@ for (var feat in intersecting_lines) {
             new_shape_2[Count(new_shape_2)] = new_path_2;
         }
     }
-    return Text(new_shape_1);
-    return Text(new_shape_2);
-}
+    // Convert feature to dictionary to get all its attributes
+    var line_att = Dictionary(Text(line_feature))['attributes'];
 
+    // Get the length of the new lings
+    var polyline_1 = Polyline({"paths": new_shape_1, "spatialReference": {"wkid": line_spat_ref}});
+    var polyline_2 = Polyline({"paths": new_shape_2, "spatialReference": {"wkid": line_spat_ref}});
+    var polyline_1_length = Length(polyline_1);
+    var polyline_2_length = Length(polyline_2);
+
+    // List of keys to remove from new feature, existing features change only requires global id
+    var keys = ['SHAPE_LENGTH', 'GLOBALID', 'OBJECTID'];
+    // Check length of new shapes, adjust the current feature to the longest segment
+    if (polyline_1_length > polyline_2_length) {
+        update_features[Count(update_features)] = {
+            'globalID': line_feature.globalID,
+            'geometry': polyline_1
+        };
+        new_features[Count(new_features)] =
+            {
+                'globalID': GUID(),
+                'geometry': polyline_2,
+                'attributes': pop_keys(line_att, keys)
+            };
+    } else {
+        update_features[Count(update_features)] = {
+            'globalID': line_feature.globalID,
+            'geometry': polyline_2
+        };
+        new_features[Count(new_features)] =
+            {
+                'globalID': GUID(),
+                'geometry': polyline_1,
+                'attributes': pop_keys(line_att, keys)
+            };
+    }
+}
+return {
+    'result': field_value,
+    'edit': [
+        {
+            'className': line_class_name,
+            'updates': update_features,
+            'adds': new_features
+        }
+    ]
+};
 ```
