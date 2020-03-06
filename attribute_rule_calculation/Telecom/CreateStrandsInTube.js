@@ -8,8 +8,9 @@ var line_class = 'CommunicationsLine';
 var device_class = 'CommunicationsDevice';
 var strand_count = $feature.ContentCount;
 
-var contained_features_AG = 9;
-var contained_features_AT = 163;
+var strands_AG = 9;
+var strands_AT = 163;
+var strand_sql = 'AssetGroup = 9 AND AssetType = 163';
 
 var splice_junction_sql = 'AssetGroup = 8 AND AssetType = 72';
 var junction_features_AG = 8;
@@ -119,15 +120,41 @@ if (!IsEmpty($feature.FromGUID)) {
             }
         } else if ($feature.FromAGAT == 'splitter') {
 
-            var line_fs = get_features_switch_yard(line_class, ['GlobalID'], true);
+            var line_fs = Filter(get_features_switch_yard(line_class, ['GlobalID'], true), strand_sql);
             from_associated_features = Filter(fs, "globalid IN @contained_ids and " + splitter_junction_sql);
             for (var feat in from_associated_features) {
                 var intersection = Intersects(line_fs, feat);
+                var new_geo = Geometry(feat);
                 if (Count(intersection) == 0) {
-                    var new_geo = Geometry(feat);
                     from_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
-                    //return from_associated_features_for_splitter
-                    break
+                    break;
+                } else {
+                    var line_on_end = false;
+                    for (var line_feat in intersection) {
+                        var line_geo_strand = Geometry(line_feat);
+                        var vertices_strand = line_geo_strand['paths'][0];
+                        var from_point_strand = vertices_strand[0];
+                        var to_point_strand = vertices_strand[-1];
+                        if (Round(new_geo['x'], 6) == Round(from_point_strand['x'], 6) &&
+                            Round(new_geo['y'], 6) == Round(from_point_strand['y'], 6)) {
+                            line_on_end = true;
+                            break;
+                        }
+                        if (Round(new_geo['x'], 6) == Round(to_point_strand['x'], 6) &&
+                            Round(new_geo['y'], 6) == Round(to_point_strand['y'], 6)) {
+                            line_on_end = true;
+                            break;
+                        }
+                        //if (Within(new_geo, Geometry(line_feat))) {
+                        //     line_on_end = true;
+                        //     break;
+                        // }
+                    }
+                    if (line_on_end) {
+                        continue;
+                    }
+                    from_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
+                    break;
                 }
             }
         }
@@ -154,15 +181,36 @@ if (!IsEmpty($feature.toGUID)) {
                 to_associated_features_by_strand[Text(feat['Strand'])] = Geometry(feat)
             }
         } else if ($feature.toAGAT == 'splitter') {
-            var line_fs = get_features_switch_yard(line_class, ['GlobalID'], true);
+            var line_fs = Filter(get_features_switch_yard(line_class, ['GlobalID'], true), strand_sql);
             to_associated_features = Filter(fs, "globalid IN @contained_ids and " + splitter_junction_sql);
             for (var feat in to_associated_features) {
                 var intersection = Intersects(line_fs, feat);
+                var new_geo = Geometry(feat);
                 if (Count(intersection) == 0) {
-                    var new_geo = Geometry(feat);
-
                     to_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
-                    //return to_associated_features_for_splitter
+                    break
+                } else {
+                    var line_on_end = false;
+                    for (var line_feat in intersection) {
+                        var line_geo_strand = Geometry(line_feat);
+                        var vertices_strand = line_geo_strand['paths'][0];
+                        var from_point_strand = vertices_strand[0];
+                        var to_point_strand = vertices_strand[-1];
+                        if (Round(new_geo['x'], 6) == Round(from_point_strand['x'], 6) &&
+                            Round(new_geo['y'], 6) == Round(from_point_strand['y'], 6)) {
+                            line_on_end = true;
+                            break;
+                        }
+                        if (Round(new_geo['x'], 6) == Round(to_point_strand['x'], 6) &&
+                            Round(new_geo['y'], 6) == Round(to_point_strand['y'], 6)) {
+                            line_on_end = true;
+                            break;
+                        }
+                    }
+                    if (line_on_end) {
+                        continue;
+                    }
+                    to_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
                     break
                 }
             }
@@ -206,8 +254,8 @@ var junction_adds = [];
 
 for (var j = 0; j < strand_count; j++) {
     attributes = {
-        'AssetGroup': contained_features_AG,
-        'AssetType': contained_features_AT,
+        'AssetGroup': strands_AG,
+        'AssetType': strands_AT,
         'Identifier': j + 1,
         'IsSpatial': 0,
         'FromAGAT': $feature.FromAGAT,
