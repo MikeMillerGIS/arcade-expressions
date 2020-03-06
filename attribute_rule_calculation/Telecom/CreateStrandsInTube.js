@@ -100,7 +100,7 @@ var from_point = vertices[0];
 var to_point = vertices[-1];
 
 var from_associated_features_by_strand = {};
-var from_associated_features_for_splitter = null;
+var from_associated_features_for_splitter = [];
 if (!IsEmpty($feature.FromGUID)) {
     var from_associated_features = null;
     var from_container_guid = $feature.FromGUID;
@@ -118,12 +118,15 @@ if (!IsEmpty($feature.FromGUID)) {
                 from_associated_features_by_strand[Text(feat['Strand'])] = Geometry(feat)
             }
         } else if ($feature.FromAGAT == 'splitter') {
+
             var line_fs = get_features_switch_yard(line_class, ['GlobalID'], true);
             from_associated_features = Filter(fs, "globalid IN @contained_ids and " + splitter_junction_sql);
             for (var feat in from_associated_features) {
                 var intersection = Intersects(line_fs, feat);
                 if (Count(intersection) == 0) {
-                    from_associated_features_for_splitter = feat;
+                    var new_geo = Geometry(feat);
+                    from_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
+                    //return from_associated_features_for_splitter
                     break
                 }
             }
@@ -156,7 +159,10 @@ if (!IsEmpty($feature.toGUID)) {
             for (var feat in to_associated_features) {
                 var intersection = Intersects(line_fs, feat);
                 if (Count(intersection) == 0) {
-                    to_associated_features_for_splitter = feat;
+                    var new_geo = Geometry(feat);
+
+                    to_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
+                    //return to_associated_features_for_splitter
                     break
                 }
             }
@@ -211,14 +217,12 @@ for (var j = 0; j < strand_count; j++) {
     };
     var line_shape = Dictionary(Text(Geometry($feature)));
 
-
     if ($feature.FromAGAT == 'splice') {
+
         var new_from_point = null;
         if (haskey(from_associated_features_by_strand, Text(j + 1))) {
             new_from_point = from_associated_features_by_strand[Text(j + 1)];
             new_from_point = [new_from_point.x, new_from_point.y, new_from_point.z, null];
-            //return [new_from_point.x, new_from_point.y, new_from_point.z, null];
-            //return line_shape['paths'][0][0] + ':' + new_from_point
         } else {
             var from_attributes = {
                 'AssetGroup': junction_features_AG,
@@ -235,9 +239,13 @@ for (var j = 0; j < strand_count; j++) {
             };
             new_from_point = from_line[j];
         }
-        line_shape['paths'][0][0] = new_from_point;//[new_from_point.x, new_from_point.y, new_from_point.z, null];
+        line_shape['paths'][0][0] = new_from_point;
+    } else if ($feature.FromAGAT == 'splitter' && count(from_associated_features_for_splitter) > 0) {
+        line_shape['paths'][0][0] = from_associated_features_for_splitter;
+
     }
     if ($feature.ToAGAT == 'splice') {
+
         var new_to_point = null;
         if (haskey(to_associated_features_by_strand, Text(j + 1))) {
             new_to_point = to_associated_features_by_strand[Text(j + 1)];
@@ -260,7 +268,10 @@ for (var j = 0; j < strand_count; j++) {
             new_to_point = to_line[j]
         }
         line_shape['paths'][0][-1] = new_to_point;//[new_to_point.x, new_to_point.y, new_to_point.z, null];
+    } else if ($feature.ToAGAT == 'splitter' && count(to_associated_features_for_splitter) > 0) {
+        line_shape['paths'][0][-1] = to_associated_features_for_splitter;
     }
+
     line_adds[Count(line_adds)] = {
         'attributes': attributes,
         'geometry': Polyline(line_shape),
@@ -268,6 +279,7 @@ for (var j = 0; j < strand_count; j++) {
     };
 
 }
+
 var edit_payload = [{'className': line_class, 'adds': line_adds}];
 if (Count(junction_adds) > 0) {
     edit_payload[Count(edit_payload)] = {'className': device_class, 'adds': junction_adds}
