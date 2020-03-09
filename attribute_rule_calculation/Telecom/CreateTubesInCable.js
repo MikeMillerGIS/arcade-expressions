@@ -14,7 +14,19 @@ var contained_features_AT = 21;
 
 var device_fs = FeatureSetByName($datastore, "CommunicationsDevice", ["globalid", "assetgroup", 'assettype'], false);
 
-// ************* End Section *****************
+var sql_snap_types = {
+    'splitter': [
+        'AssetGroup = 7 and AssetType = 130',
+        'AssetGroup = 3 and AssetType = 43'],
+    'splice': [
+        'AssetGroup = 10 and AssetType = 33',
+        'AssetGroup = 2 and AssetType = 33'],
+    'pass-through': [
+        'AssetGroup = 11 and AssetType = 1',
+        'AssetGroup = 1 and AssetType = 1']
+};
+
+
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
@@ -29,17 +41,7 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
     return feature_set;
 }
 
-function fiber_ending_type(feat) {
-    if (IsEmpty(feat)) {
-        return 'unknown'
-    }
-    if (indexof([7], feat['AssetGroup']) == -1 && indexof([130], feat['AssetType']) == -1) {
-        return 'splice'
-    } else if (indexof([10], feat['AssetGroup']) == -1 && indexof([33], feat['AssetType']) == -1) {
-        return 'splitter'
-    }
-    return 'unknown'
-}
+// ************* End Section *****************
 
 function adjust_z(line_geo, z_value) {
     var line_shape = Dictionary(Text(line_geo));
@@ -56,29 +58,11 @@ function adjust_z(line_geo, z_value) {
     return Polyline(line_shape)
 }
 
-
 function is_even(value) {
     return (Number(value) % 2) == 0;
 }
 
-// Function to pop empty values in a dict
-function pop_empty(dict) {
-    var new_dict = {};
-    for (var k in dict) {
-        if (IsNan(dict[k])) {
-            //new_dict[k] = null;
-            continue;
-        }
-        if (IsEmpty(dict[k])) {
-            //new_dict[k] = null;
-            continue;
-        }
-        new_dict[k] = dict[k];
-    }
-    return new_dict
-}
-
-function get_tube_count(fiber_count, design) {
+function get_tube_count() {
     // Return the tube count based on strands
     if (fiber_count <= 12) {
         return 1;
@@ -110,84 +94,96 @@ function get_tube_count(fiber_count, design) {
     return null;
 }
 
+function get_snapped_container_info(point_geo) {
+    var container_GUID = null;
+    var snap_type = null;
+
+    var snapped_feats = Intersects(device_fs, Point(point_geo));
+    for (var st in sql_snap_types) {
+        var snapped_feat = First(Filter(snapped_feats, sql_snap_types[st][0]));
+        if (!IsEmpty(snapped_feat)) {
+            container_row = First(FeatureSetByAssociation(snapped_feat, 'container'));
+            if (!IsEmpty(container_row)) {
+                var fs = get_features_switch_yard(container_row['className'], ['globalid'], false);
+                var global_id = container_row['globalid'];
+                var container_row = First(Filter(fs, "globalid = @global_id and " + sql_snap_types[st][1]));
+                if (!IsEmpty(container_row)) {
+                    container_GUID = global_id;
+                    snap_type = st;
+                    break;
+                }
+            }
+        }
+    }
+    return [container_GUID, snap_type]
+}
+
+// Validation
+
+//Limit the rule to valid subtypes
 if (indexof(valid_asset_types, $feature.assettype) == -1) {
     return identifier;
 }
-
+// Require a value for fiber content
 if (IsEmpty(fiber_count) || fiber_count == 0) {
     return {'errorMessage': 'A value is required for the content count field'};
 }
-var num_childs = null;
-var content_val_to_set = null;
-
+// Fiber count must be event
 if (is_even(fiber_count) == false) {
     return {'errorMessage': 'Fiber count must be even'};
 }
-
-num_childs = get_tube_count(fiber_count, cable_design);
-
-if (IsEmpty(num_childs)) {
+// Get the tube count based on the cable design and strand count
+var num_tubes = get_tube_count();
+if (IsEmpty(num_tubes)) {
     return {'errorMessage': 'Tube count not be calculated based on the design and fiber count'};
 }
-content_val_to_set = fiber_count / num_childs;
-if (content_val_to_set % 1 != 0) {
+// Ensure the strand distribution is even
+var strand_per_tube = fiber_count / num_tubes;
+if (strand_per_tube % 1 != 0) {
     return {
         'errorMessage': 'Fiber per tube distribution is not uniform: ' +
             'Fiber Count:' + fiber_count + TextFormatting.NewLine +
-            'Tube Count:' + num_childs + TextFormatting.NewLine +
-            'Strands Per Tube:' + content_val_to_set
+            'Tube Count:' + num_tubes + TextFormatting.NewLine +
+            'Strands Per Tube:' + strand_per_tube
     };
 }
 
 // Get the start and end vertex of the line
 var geo = Geometry($feature);
 var vertices = geo['paths'][0];
-var sr = geo.spatialReference;
 var start_point = vertices[0];
 var end_point = vertices[-1];
 
-var start_device_feat = First(Intersects(device_fs, Point(start_point)));
-var start_container_row = null;
-if (!IsEmpty(start_device_feat)) {
-    start_container_row = First(FeatureSetByAssociation(start_device_feat, 'container'));
-    if (!IsEmpty(start_container_row)) {
-        var fs = get_features_switch_yard(start_container_row['className'], ['globalid'], false);
-        var global_id = start_container_row['globalid'];
-        start_container_row = First(Filter(fs, "globalid = @global_id"));
-    }
-}
-var end_device_feat = First(Intersects(device_fs, Point(end_point)));
-var end_container_row = null;
-if (!IsEmpty(end_device_feat)) {
-    end_container_row = First(FeatureSetByAssociation(end_device_feat, 'container'));
-    if (!IsEmpty(end_container_row)) {
-        var fs = get_features_switch_yard(end_container_row['className'], ['globalid'], false);
-        var global_id = end_container_row['globalid'];
-        end_container_row = First(Filter(fs, "globalid = @global_id"));
-    }
-}
+// Get the snapped container.  This could be the assembly containing the device
+var snapped_container_info = get_snapped_container_info(Point(start_point));
+var start_container_GUID = snapped_container_info[0];
+var start_container_snap_type = snapped_container_info[1];
+snapped_container_info = get_snapped_container_info(Point(end_point));
+var end_container_GUID = snapped_container_info[0];
+var end_container_snap_type = snapped_container_info[1];
+
 var attributes = {};
 var line_adds = [];
-for (var j = 0; j < num_childs; j++) {
+for (var j = 0; j < num_tubes; j++) {
     attributes = {
         'AssetGroup': contained_features_AG,
         'AssetType': contained_features_AT,
         'Identifier': j + 1,
         'IsSpatial': 0,
-        'FromAGAT': fiber_ending_type(start_device_feat),
-        'FromGUID': DefaultValue(start_container_row, {'globalid': null})['globalid'],
-        'FromFeature': Text(start_container_row),
-        'ToAGAT': fiber_ending_type(end_device_feat),
-        'ToGUID': DefaultValue(end_container_row, {'globalid': null})['globalid'],
-        'ToFeature': Text(end_container_row),
+        'FromAGAT': start_container_snap_type,
+        'FromGUID': start_container_GUID,
+        'ToAGAT': end_container_snap_type,
+        'ToGUID': end_container_GUID,
     };
 
-    attributes['ContentCount'] = content_val_to_set;
+    attributes['ContentCount'] = strand_per_tube;
+    // Convert the shape to a dict for manipulation
     var line_shape = Dictionary(Text(Geometry($feature)));
+    // Create an offset value so the tubes are offset on both sides of the cables
     var offset_value = iif(is_even(j), Ceil((j + 1) / 2) * .1, -(Ceil((j + 1) / 2) * .1));
     line_adds[Count(line_adds)] = {
         'attributes': attributes,
-        'geometry': offset(adjust_z(Polyline(line_shape), j + 1), offset_value),
+        'geometry': offset(adjust_z(Polyline(line_shape), j + 10), offset_value),
         'associationType': 'content'
     };
 }

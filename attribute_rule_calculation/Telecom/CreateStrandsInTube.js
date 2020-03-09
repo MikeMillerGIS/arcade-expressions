@@ -222,7 +222,7 @@ var offset_dist = 0;
 var perp_dist = .1;
 var from_line = create_perp_line(from_point, geo, offset_dist, perp_dist);
 //return (from_line)
-from_line = adjust_z(from_line, identifier);
+from_line = adjust_z(from_line, 100);
 from_line = densify(from_line, (length(from_line) / strand_count))['paths'][0];
 var vertex_cnt = count(from_line);
 
@@ -236,7 +236,7 @@ from_line = new_from;
 
 var to_line = create_perp_line(to_point, geo, offset_dist, perp_dist);
 //return (to_line)
-to_line = adjust_z(to_line, identifier);
+to_line = adjust_z(to_line, 100);
 to_line = densify(to_line, (length(to_line) / strand_count))['paths'][0];
 var vertex_cnt = count(to_line);
 
@@ -266,7 +266,6 @@ for (var j = 0; j < strand_count; j++) {
     var line_shape = Dictionary(Text(Geometry($feature)));
 
     if ($feature.FromAGAT == 'splice') {
-
         var new_from_point = null;
         if (haskey(from_associated_features_by_strand, Text(j + 1))) {
             new_from_point = from_associated_features_by_strand[Text(j + 1)];
@@ -288,10 +287,16 @@ for (var j = 0; j < strand_count; j++) {
             new_from_point = from_line[j];
         }
         line_shape['paths'][0][0] = new_from_point;
-    } else if ($feature.FromAGAT == 'splitter' && count(from_associated_features_for_splitter) > 0) {
-        line_shape['paths'][0][0] = from_associated_features_for_splitter;
-
+    } else if ($feature.FromAGAT == 'splitter') {
+        if (count(from_associated_features_for_splitter) > 0) {
+            line_shape['paths'][0][0] = from_associated_features_for_splitter;
+        } else {
+            line_shape['paths'][0][0] = from_line[j];
+        }
+    } else {
+        line_shape['paths'][0][0] = from_line[j];
     }
+
     if ($feature.ToAGAT == 'splice') {
 
         var new_to_point = null;
@@ -315,11 +320,16 @@ for (var j = 0; j < strand_count; j++) {
 
             new_to_point = to_line[j]
         }
-        line_shape['paths'][0][-1] = new_to_point;//[new_to_point.x, new_to_point.y, new_to_point.z, null];
-    } else if ($feature.ToAGAT == 'splitter' && count(to_associated_features_for_splitter) > 0) {
-        line_shape['paths'][0][-1] = to_associated_features_for_splitter;
+        line_shape['paths'][0][-1] = new_to_point;
+    } else if ($feature.ToAGAT == 'splitter') {
+        if (count(to_associated_features_for_splitter) > 0) {
+            line_shape['paths'][0][-1] = to_associated_features_for_splitter;
+        } else {
+            line_shape['paths'][0][-1] = to_line[j];
+        }
+    } else {
+        line_shape['paths'][0][-1] = to_line[j];
     }
-
     line_adds[Count(line_adds)] = {
         'attributes': attributes,
         'geometry': Polyline(line_shape),
