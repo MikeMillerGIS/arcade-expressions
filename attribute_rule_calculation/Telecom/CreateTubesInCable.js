@@ -66,6 +66,12 @@ function get_tube_count() {
     // Return the tube count based on strands
     if (fiber_count <= 12) {
         return 1;
+    } else if (fiber_count <= 24) {
+        return 2;
+    } else if (fiber_count <= 36) {
+        return 3;
+    } else if (fiber_count <= 48) {
+        return 4;
     } else if (fiber_count <= 60) {
         return 5;
     } else if (fiber_count <= 72) {
