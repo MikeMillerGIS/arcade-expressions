@@ -2,30 +2,33 @@
 
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
-var valid_asset_types = [44];
+var valid_asset_types = [3];
 
 var identifier = $feature.Identifier;
 var line_class = 'CommunicationsLine';
 var fiber_count = $feature.ContentCount;
 var cable_design = $feature.CableDesign;
 
-var contained_features_AG = 2;
-var contained_features_AT = 21;
+// The Asset Group and Type of the tubes in a cable
+var new_tube_features_AG = 2;
+var new_tube_features_AT = 3;
 
 var device_fs = FeatureSetByName($datastore, "CommunicationsDevice", ["globalid", "assetgroup", 'assettype'], false);
 
+//Device,Asset Group=3,Asset Type=1 acts as a splitter
+//Device,Asset Group=(1,2,3,5,6,7),Asset Type=3 acts as a splice
+//Device,Asset Group=(1,2,5,6,7),Asset Type=1 acts as a pass-through
 var sql_snap_types = {
     'splitter': [
-        'AssetGroup = 7 and AssetType = 130',
-        'AssetGroup = 3 and AssetType = 43'],
+        '(AssetGroup = 3 and AssetType = 1) or (AssetGroup = 1 and AssetType = 4) or (AssetGroup = 2 and AssetType = 4) or (AssetGroup = 3 and AssetType = 4) or (AssetGroup = 5 and AssetType = 4) or (AssetGroup = 6 and AssetType = 4) or (AssetGroup = 7 and AssetType = 4)',
+        '(AssetGroup = 3 and AssetType = 1) or (AssetGroup = 1 and AssetType = 4) or (AssetGroup = 2 and AssetType = 4) or (AssetGroup = 3 and AssetType = 4) or (AssetGroup = 5 and AssetType = 4) or (AssetGroup = 6 and AssetType = 4) or (AssetGroup = 7 and AssetType = 4)'],
     'splice': [
-        'AssetGroup = 10 and AssetType = 33',
-        'AssetGroup = 2 and AssetType = 33'],
+        '(AssetGroup = 1 and AssetType = 3) or (AssetGroup = 2 and AssetType = 3) or (AssetGroup = 3 and AssetType = 3) or (AssetGroup = 5 and AssetType = 3) or (AssetGroup = 6 and AssetType = 3) or (AssetGroup = 7 and AssetType = 3)',
+        '(AssetGroup = 1 and AssetType = 3) or (AssetGroup = 2 and AssetType = 3) or (AssetGroup = 3 and AssetType = 3) or (AssetGroup = 5 and AssetType = 3) or (AssetGroup = 6 and AssetType = 3) or (AssetGroup = 7 and AssetType = 3)'],
     'pass-through': [
-        'AssetGroup = 11 and AssetType = 1',
-        'AssetGroup = 1 and AssetType = 1']
+        '(AssetGroup = 1 and AssetType = 1) or (AssetGroup = 2 and AssetType = 1) or (AssetGroup = 5 and AssetType = 1) or (AssetGroup = 6 and AssetType = 1) or (AssetGroup = 7 and AssetType = 1)',
+        '(AssetGroup = 1 and AssetType = 1) or (AssetGroup = 2 and AssetType = 1) or (AssetGroup = 5 and AssetType = 1) or (AssetGroup = 6 and AssetType = 1) or (AssetGroup = 7 and AssetType = 1)']
 };
-
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
@@ -173,8 +176,8 @@ var attributes = {};
 var line_adds = [];
 for (var j = 0; j < num_tubes; j++) {
     attributes = {
-        'AssetGroup': contained_features_AG,
-        'AssetType': contained_features_AT,
+        'AssetGroup': new_tube_features_AG,
+        'AssetType': new_tube_features_AT,
         'Identifier': j + 1,
         'IsSpatial': 0,
         'fromsnap': start_container_snap_type,

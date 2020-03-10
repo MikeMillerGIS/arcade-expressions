@@ -1,25 +1,28 @@
 // This rule will generate contained spatial/non spatial features
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
-var valid_asset_types = [21];
+var valid_asset_types = [3];
 
 var identifier = $feature.Identifier;
 var line_class = 'CommunicationsLine';
 var device_class = 'CommunicationsDevice';
 var strand_count = $feature.ContentCount;
 
+// The device that will be created in a splice when an existing splice location is not found, this is a Port: Splice
+var new_splice_feature_AG = 8;
+var new_splice_feature_AT = 143;
+// This sql represents the port devices that the strand will snap to the equipment type that the cable snaps to
+// The strand looks inside the snapped to assembly, to find devices of this type
 var sql_snap_types = {
-    'splitter': 'AssetGroup = 8 AND AssetType = 73',
-    'splice': 'AssetGroup = 8 AND AssetType = 72',
-    'pass-through': 'AssetGroup = 8 AND AssetType = 66'
+    'splitter': 'AssetGroup = 8 AND AssetType = 142', // Port: Splitter Out
+    'splice': 'AssetGroup = ' + new_splice_feature_AG + ' AND AssetType = ' + new_splice_feature_AT, // Port: Splice
+    'pass-through': 'AssetGroup = 8 AND AssetType = 144' // Port: Strand Termination
 };
 
-var strands_AG = 9;
+// The Asset Group and Asset Type of the fiber strand
+var strands_AG = 8;
 var strands_AT = 163;
-var strand_sql = 'AssetGroup = 9 AND AssetType = 163';
-
-var junction_features_AG = 8;
-var junction_features_AT = 72;
+var strand_sql = 'AssetGroup = ' + strands_AG + ' AND  AssetType = ' + strands_AT;
 
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
@@ -226,8 +229,8 @@ function splice_end_point(port_features, prep_line_offset, vertex_index, contain
         new_point = port_features[Text(vertex_index + 1)];
     } else {
         var new_feature_attributes = {
-            'AssetGroup': junction_features_AG,
-            'AssetType': junction_features_AT,
+            'AssetGroup': new_splice_feature_AG,
+            'AssetType': new_splice_feature_AT,
             'Tube': identifier,
             'Strand': vertex_index + 1,
             'ContainerGUID': container_guid,

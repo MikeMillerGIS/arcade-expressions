@@ -3,6 +3,16 @@
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
+var assigned_to_field = $feature.assetid;
+var valid_asset_types = [143];
+var use_device_as_container = false;
+var device_class = 'CommunicationsDevice';
+var container_class;
+if (use_device_as_container == true) {
+    container_class = device_class;
+} else {
+    container_class = 'CommunicationsAssembly';
+}
 // Get Feature Switch yard, adjust the string literals to match your GDB feature class names
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
@@ -16,17 +26,6 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
         feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
     }
     return feature_set;
-}
-
-var assigned_to_field = $feature.assetid;
-var valid_asset_types = [72];
-var use_device_as_container = false;
-var device_class = 'CommunicationsDevice';
-var container_class;
-if (use_device_as_container == true) {
-    container_class = device_class;
-} else {
-    container_class = 'CommunicationsAssembly';
 }
 
 // ************* End Section *****************
