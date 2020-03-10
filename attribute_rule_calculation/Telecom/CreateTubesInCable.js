@@ -177,9 +177,9 @@ for (var j = 0; j < num_tubes; j++) {
         'AssetType': contained_features_AT,
         'Identifier': j + 1,
         'IsSpatial': 0,
-        'FromAGAT': start_container_snap_type,
+        'fromsnap': start_container_snap_type,
         'FromGUID': start_container_GUID,
-        'ToAGAT': end_container_snap_type,
+        'tosnap': end_container_snap_type,
         'ToGUID': end_container_GUID,
     };
 

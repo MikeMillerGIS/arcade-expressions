@@ -267,8 +267,8 @@ var from_point = vertices[0];
 var to_point = vertices[-1];
 
 // Get the from and to features the strands need to be adjusted too
-var from_port_features = get_line_ends($feature.FromGUID, $feature.FromAGAT);
-var to_port_features = get_line_ends($feature.ToGUID, $feature.ToAGAT);
+var from_port_features = get_line_ends($feature.FromGUID, $feature.fromsnap);
+var to_port_features = get_line_ends($feature.ToGUID, $feature.tosnap);
 
 // Generate offset lines to move strands to when no port is found
 var from_offset_line = generate_offset_line(from_point, geo, strand_count, 100);
@@ -285,14 +285,14 @@ for (var j = 0; j < strand_count; j++) {
         'AssetType': strands_AT,
         'Identifier': j + 1,
         'IsSpatial': 0,
-        'FromAGAT': $feature.FromAGAT,
+        'fromsnap': $feature.fromsnap,
         'FromGUID': $feature.FromGUID,
-        'ToAGAT': $feature.ToAGAT,
+        'tosnap': $feature.tosnap,
         'ToGUID': $feature.ToGUID
     };
     var line_shape = Dictionary(Text(Geometry($feature)));
 
-    if ($feature.FromAGAT == 'splice') {
+    if ($feature.fromsnap == 'splice') {
 
         var splice_from_info = splice_end_point(from_port_features, from_offset_line, j, $feature.FromGUID);
         if (!IsEmpty(splice_from_info[0])) {
@@ -304,13 +304,13 @@ for (var j = 0; j < strand_count; j++) {
             junction_adds[Count(junction_adds)] = splice_from_info[1];
         }
 
-    } else if ($feature.FromAGAT == 'splitter') {
+    } else if ($feature.fromsnap == 'splitter') {
         if (HasKey(from_port_features, 'singleport')) {
             line_shape['paths'][0][0] = point_to_array(from_port_features['singleport']);
         } else {
             line_shape['paths'][0][0] = point_to_array(from_offset_line[j]);
         }
-    } else if ($feature.FromAGAT == 'pass-through') {
+    } else if ($feature.fromsnap == 'pass-through') {
 
         if (HasKey(from_port_features, Text(j))) {
             line_shape['paths'][0][0] = point_to_array(from_port_features[Text(j)]);
@@ -321,7 +321,7 @@ for (var j = 0; j < strand_count; j++) {
         line_shape['paths'][0][0] = point_to_array(from_offset_line[j]);
     }
 
-    if ($feature.ToAGAT == 'splice') {
+    if ($feature.tosnap == 'splice') {
         var splice_to_info = splice_end_point(to_port_features, to_offset_line, j, $feature.ToGUID);
         if (!IsEmpty(splice_to_info[0])) {
             line_shape['paths'][0][-1] = point_to_array(splice_to_info[0]);
@@ -331,13 +331,13 @@ for (var j = 0; j < strand_count; j++) {
         if (!IsEmpty(splice_to_info[1])) {
             junction_adds[Count(junction_adds)] = splice_to_info[1];
         }
-    } else if ($feature.ToAGAT == 'splitter') {
+    } else if ($feature.tosnap == 'splitter') {
         if (HasKey(to_port_features, 'singleport')) {
             line_shape['paths'][0][-1] = point_to_array(to_port_features['singleport']);
         } else {
             line_shape['paths'][0][-1] = point_to_array(to_offset_line[j]);
         }
-    } else if ($feature.ToAGAT == 'pass-through') {
+    } else if ($feature.tosnap == 'pass-through') {
         if (HasKey(to_port_features, Text(j))) {
             line_shape['paths'][0][-1] = point_to_array(to_port_features[Text(j)]);
         } else {

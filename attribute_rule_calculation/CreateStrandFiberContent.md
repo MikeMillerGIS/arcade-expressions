@@ -490,9 +490,9 @@ for (var j = 0; j < num_childs; j++) {
         'AssetType': contained_features_AT,
         'Identifier': j + 1,
         'IsSpatial': 0,
-        'FromAGAT': fiber_ending_type(start_device_feat),
+        'fromsnap': fiber_ending_type(start_device_feat),
         'FromGUID': DefaultValue(start_container_row, {'globalid': null})['globalid'],
-        'ToAGAT': fiber_ending_type(end_device_feat),
+        'tosnap': fiber_ending_type(end_device_feat),
         'ToGUID': DefaultValue(end_container_row, {'globalid': null})['globalid']
     };
 
