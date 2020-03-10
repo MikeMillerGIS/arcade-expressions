@@ -9,8 +9,8 @@ var device_class = 'CommunicationsDevice';
 var strand_count = $feature.ContentCount;
 
 var sql_snap_types = {
-    'splitter': 'AssetGroup = 8 AND AssetType = 72',
-    'splice': 'AssetGroup = 8 AND AssetType = 73',
+    'splitter': 'AssetGroup = 8 AND AssetType = 73',
+    'splice': 'AssetGroup = 8 AND AssetType = 72',
 };
 
 var strands_AG = 9;
@@ -91,8 +91,8 @@ function generate_offset_line(point_geo, line_geo, densify_tolerance, z_value) {
     var vertex_cnt = count(prep_line);
     var new_vertex = [];
     for (var v = 0; v < count(prep_line); v++) {
-        if (v == 0 || v == vertex_cnt - 1 || v % (vertex_cnt / strand_count) < 1) {
-            new_vertex[Count(new_vertex)] = prep_line[v]
+        if (v == 0 || v == vertex_cnt - 1 || v % (vertex_cnt / densify_tolerance) < 1) {
+            new_vertex[Count(new_vertex)] = [prep_line[v]['x'], prep_line[v]['y'], prep_line[v]['z'], null]
         }
     }
     return new_vertex
@@ -214,7 +214,7 @@ var from_port_features = get_line_ends($feature.FromGUID, $feature.FromAGAT);
 var to_port_features = get_line_ends($feature.ToGUID, $feature.ToAGAT);
 
 // Generate offset lines to move strands to when no port is found
-var from_offeset_line = generate_offset_line(from_point, geo, strand_count, 100);
+var from_offset_line = generate_offset_line(from_point, geo, strand_count, 100);
 var to_offset_line = generate_offset_line(to_point, geo, strand_count, 100);
 
 var attributes = {};
@@ -227,7 +227,6 @@ function splice_end_point(port_features, prep_line_offset, vertex_index, contain
     var new_feature = null;
     if (haskey(port_features, Text(vertex_index + 1))) {
         new_point = port_features[Text(vertex_index + 1)];
-        new_point = [new_point.x, new_point.y, new_point.z, null];
     } else {
         var new_feature_attributes = {
             'AssetGroup': junction_features_AG,
@@ -261,11 +260,11 @@ for (var j = 0; j < strand_count; j++) {
     var line_shape = Dictionary(Text(Geometry($feature)));
 
     if ($feature.FromAGAT == 'splice') {
-        var spice_end_info = splice_end_point(from_port_features, from_offeset_line, j, $feature.FromGUID);
+        var spice_end_info = splice_end_point(from_port_features, from_offset_line, j, $feature.FromGUID);
         if (!IsEmpty(spice_end_info[0])) {
             line_shape['paths'][0][0] = spice_end_info[0];
         } else {
-            line_shape['paths'][0][0] = from_offeset_line[j];
+            line_shape['paths'][0][0] = from_offset_line[j];
         }
         if (!IsEmpty(spice_end_info[1])) {
             junction_adds[Count(junction_adds)] = spice_end_info[1];
@@ -275,10 +274,10 @@ for (var j = 0; j < strand_count; j++) {
         if (HasKey(from_port_features, 'singleport')) {
             line_shape['paths'][0][0] = from_port_features['singleport'];
         } else {
-            line_shape['paths'][0][0] = from_offeset_line[j];
+            line_shape['paths'][0][0] = from_offset_line[j];
         }
     } else {
-        line_shape['paths'][0][0] = from_offeset_line[j];
+        line_shape['paths'][0][0] = from_offset_line[j];
     }
 
     if ($feature.ToAGAT == 'splice') {
@@ -286,7 +285,7 @@ for (var j = 0; j < strand_count; j++) {
         if (!IsEmpty(spice_end_info[0])) {
             line_shape['paths'][0][-1] = spice_end_info[0];
         } else {
-            line_shape['paths'][0][-1] = to_offeset_line[j];
+            line_shape['paths'][0][-1] = to_offset_line[j];
         }
         if (!IsEmpty(spice_end_info[1])) {
             junction_adds[Count(junction_adds)] = spice_end_info[1];
