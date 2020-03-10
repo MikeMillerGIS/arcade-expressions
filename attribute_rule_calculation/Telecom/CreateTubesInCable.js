@@ -82,13 +82,13 @@ function get_tube_count() {
         return 22;
     } else if (fiber_count <= 288) {
         return 24;
-    } else if (fiber_count <= 360 && design == 1) {
+    } else if (fiber_count <= 360 && cable_design == 1) {
         return 30;
-    } else if (fiber_count <= 432 && design == 1) {
+    } else if (fiber_count <= 432 && cable_design == 1) {
         return 36;
-    } else if (fiber_count <= 372 && design == 2) {
+    } else if (fiber_count <= 372 && cable_design == 2) {
         return 30;
-    } else if (fiber_count <= 456 && design == 2) {
+    } else if (fiber_count <= 456 && cable_design == 2) {
         return 36;
     }
     return null;
@@ -120,11 +120,12 @@ function get_snapped_container_info(point_geo) {
 
 // Validation
 
-//Limit the rule to valid subtypes
+// Limit the rule to valid subtypes
 if (indexof(valid_asset_types, $feature.assettype) == -1) {
     return identifier;
 }
-// Require a value for fiber content
+
+// Require a value for fiber count
 if (IsEmpty(fiber_count) || fiber_count == 0) {
     return {'errorMessage': 'A value is required for the content count field'};
 }

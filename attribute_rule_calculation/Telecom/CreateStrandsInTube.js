@@ -8,21 +8,22 @@ var line_class = 'CommunicationsLine';
 var device_class = 'CommunicationsDevice';
 var strand_count = $feature.ContentCount;
 
+var sql_snap_types = {
+    'splitter': 'AssetGroup = 8 AND AssetType = 72',
+    'splice': 'AssetGroup = 8 AND AssetType = 73',
+};
+
 var strands_AG = 9;
 var strands_AT = 163;
 var strand_sql = 'AssetGroup = 9 AND AssetType = 163';
 
-var splice_junction_sql = 'AssetGroup = 8 AND AssetType = 72';
 var junction_features_AG = 8;
 var junction_features_AT = 72;
-
-var splitter_junction_sql = 'AssetGroup = 8 AND AssetType = 73';
 
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
-
     if (class_name == 'CommunicationsDevice') {
         feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
     } else if (class_name == 'CommunicationsLine') {
@@ -80,177 +81,171 @@ function adjust_z(line_geo, z_value) {
     return Polyline(line_shape)
 }
 
+function generate_offset_line(point_geo, line_geo, densify_tolerance, z_value) {
+    var offset_dist = 0;
+    var perp_dist = .1;
+    var prep_line = create_perp_line(point_geo, line_geo, offset_dist, perp_dist);
+
+    prep_line = adjust_z(prep_line, z_value);
+    prep_line = densify(prep_line, (length(prep_line) / densify_tolerance))['paths'][0];
+    var vertex_cnt = count(prep_line);
+    var new_vertex = [];
+    for (var v = 0; v < count(prep_line); v++) {
+        if (v == 0 || v == vertex_cnt - 1 || v % (vertex_cnt / strand_count) < 1) {
+            new_vertex[Count(new_vertex)] = prep_line[v]
+        }
+    }
+    return new_vertex
+
+}
+
+function get_line_ends(container_guid, container_type) {
+    var move_line_to_geo = {};
+    if (!IsEmpty(container_guid)) {
+        var port_features = null;
+        var new_geo = null;
+        var assoc_fs = get_features_switch_yard('Associations', ['TOGLOBALID'], false);
+        var filtered_fs = Filter(assoc_fs, "fromglobalid = @container_guid and ASSOCIATIONTYPE = 2");
+        var contained_ids = [];
+        for (var feat in filtered_fs) {
+            contained_ids[count(contained_ids)] = feat['TOGLOBALID']
+        }
+        if (Count(contained_ids) > 0) {
+            var fs = get_features_switch_yard(device_class, ['Globalid', 'Strand'], true);
+            if (container_type == 'splice') {
+                port_features = Filter(fs, "globalid IN @contained_ids and tube = @identifier and " + sql_snap_types[container_type]);
+                for (var port_feat in port_features) {
+                    new_geo = Geometry(port_feat);
+                    move_line_to_geo[Text(port_feat['Strand'])] = [new_geo.x, new_geo.y, new_geo.z, null];
+                }
+            } else if (container_type == 'splitter') {
+                // If the cable is snapped to a splitter, look for the next open port and return its geometry, all strands get snapped to the the same location
+                var line_fs = Filter(get_features_switch_yard(line_class, ['GlobalID'], true), strand_sql);
+                port_features = Filter(fs, "globalid IN @contained_ids and " + sql_snap_types[container_type]);
+                var scale_to_all_strands = null;
+                // Loop through all valid ports in the container
+                for (var port_feat in port_features) {
+                    // Intersect the existing strands to find a port without a strand connected to it
+                    var intersection = Intersects(line_fs, port_feat);
+                    new_geo = Geometry(port_feat);
+                    if (Count(intersection) == 0) {
+                        // No strands are connected, store the geometry to scale to all strands
+                        scale_to_all_strands = [new_geo.x, new_geo.y, new_geo.z, null];
+                        break;
+                    } else {
+                        // Port intersects a strand, filter to make sure it is only end/start snapping
+                        var line_on_end = false;
+                        for (var line_feat in intersection) {
+                            var line_geo_strand = Geometry(line_feat);
+                            line_on_end = point_on_start_end(new_geo, line_geo_strand);
+                            // If the line/strand is snapped at a end/start, move to next port
+                            if (line_on_end) {
+                                continue;
+                            }
+                            // Line is not snapped at end/start, store and exit loop, no need to check additional ports
+                            scale_to_all_strands = [new_geo.x, new_geo.y, new_geo.z, null];
+                            break;
+                        }
+                    }
+
+                }
+                if (!IsEmpty(scale_to_all_strands)) {
+                    move_line_to_geo['singleport'] = move_line_to_geo
+                }
+            }
+        }
+    }
+
+    return move_line_to_geo
+
+}
+
+function points_snapped(point_a, point_b) {
+    return (Round(point_a['x'], 6) == Round(point_b['x'], 6) &&
+        Round(point_a['y'], 6) == Round(point_b['y'], 6) &&
+        Round(point_a['z'], 6) == Round(point_b['z'], 6))
+
+}
+
+function point_on_start_end(point_geo, line_geo) {
+    //if (Within(new_geo, Geometry(line_feat))) {
+    //     line_on_end = true;
+    //     break;
+    // }
+    var vertices = line_geo['paths'][0];
+    var from_point = vertices[0];
+    var to_point = vertices[-1];
+
+    // Compare the start and end points
+    if (points_snapped(point_geo, to_point)) {
+        return true
+    } else if (points_snapped(new_geo, from_point)) {
+        return true
+    }
+    return false
+
+}
+
+// Validation
+
+// Limit the rule to valid subtypes
 if (indexof(valid_asset_types, $feature.assettype) == -1) {
     return identifier;
 }
 
+// Require a value for strand count
 if (IsEmpty(strand_count) || strand_count == 0) {
     return {'errorMessage': 'A value is required for the content count field'};
 }
 
+// Fiber count must be event
 if (is_even(strand_count) == false) {
     return {'errorMessage': 'Fiber count must be even'};
 }
 
 // Get the from and to vertex of the line
 var geo = Geometry($feature);
-var line_len = length(geo);
 var vertices = geo['paths'][0];
-var sr = geo.spatialReference;
 var from_point = vertices[0];
 var to_point = vertices[-1];
 
-var from_associated_features_by_strand = {};
-var from_associated_features_for_splitter = [];
-if (!IsEmpty($feature.FromGUID)) {
-    var from_associated_features = null;
-    var from_container_guid = $feature.FromGUID;
-    var fs = get_features_switch_yard('Associations', ['TOGLOBALID'], false);
-    var filtered_fs = Filter(fs, "fromglobalid = @from_container_guid and ASSOCIATIONTYPE = 2");
-    var contained_ids = [];
-    for (var feat in filtered_fs) {
-        contained_ids[count(contained_ids)] = feat['TOGLOBALID']
-    }
-    if (Count(contained_ids) > 0) {
-        var fs = get_features_switch_yard(device_class, ['Globalid', 'Strand'], true);
-        if ($feature.FromAGAT == 'splice') {
-            from_associated_features = Filter(fs, "globalid IN @contained_ids and tube = @identifier and " + splice_junction_sql);
-            for (var feat in from_associated_features) {
-                from_associated_features_by_strand[Text(feat['Strand'])] = Geometry(feat)
-            }
-        } else if ($feature.FromAGAT == 'splitter') {
+// Get the from and to features the strands need to be adjusted too
+var from_port_features = get_line_ends($feature.FromGUID, $feature.FromAGAT);
+var to_port_features = get_line_ends($feature.ToGUID, $feature.ToAGAT);
 
-            var line_fs = Filter(get_features_switch_yard(line_class, ['GlobalID'], true), strand_sql);
-            from_associated_features = Filter(fs, "globalid IN @contained_ids and " + splitter_junction_sql);
-            for (var feat in from_associated_features) {
-                var intersection = Intersects(line_fs, feat);
-                var new_geo = Geometry(feat);
-                if (Count(intersection) == 0) {
-                    from_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
-                    break;
-                } else {
-                    var line_on_end = false;
-                    for (var line_feat in intersection) {
-                        var line_geo_strand = Geometry(line_feat);
-                        var vertices_strand = line_geo_strand['paths'][0];
-                        var from_point_strand = vertices_strand[0];
-                        var to_point_strand = vertices_strand[-1];
-                        if (Round(new_geo['x'], 6) == Round(from_point_strand['x'], 6) &&
-                            Round(new_geo['y'], 6) == Round(from_point_strand['y'], 6)) {
-                            line_on_end = true;
-                            break;
-                        }
-                        if (Round(new_geo['x'], 6) == Round(to_point_strand['x'], 6) &&
-                            Round(new_geo['y'], 6) == Round(to_point_strand['y'], 6)) {
-                            line_on_end = true;
-                            break;
-                        }
-                        //if (Within(new_geo, Geometry(line_feat))) {
-                        //     line_on_end = true;
-                        //     break;
-                        // }
-                    }
-                    if (line_on_end) {
-                        continue;
-                    }
-                    from_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
-                    break;
-                }
-            }
-        }
-    }
-}
-
-
-var to_associated_features_by_strand = {};
-var to_associated_features_for_splitter = null;
-if (!IsEmpty($feature.toGUID)) {
-    var to_associated_features = null;
-    var to_container_guid = $feature.toGUID;
-    var fs = get_features_switch_yard('Associations', ['TOGLOBALID'], false);
-    var filtered_fs = Filter(fs, "fromglobalid = @to_container_guid and ASSOCIATIONTYPE = 2");
-    var contained_ids = [];
-    for (var feat in filtered_fs) {
-        contained_ids[count(contained_ids)] = feat['TOGLOBALID']
-    }
-    if (Count(contained_ids) > 0) {
-        var fs = get_features_switch_yard(device_class, ['Globalid', 'Strand'], true);
-        if ($feature.toAGAT == 'splice') {
-            to_associated_features = Filter(fs, "globalid IN @contained_ids and tube = @identifier and " + splice_junction_sql);
-            for (var feat in to_associated_features) {
-                to_associated_features_by_strand[Text(feat['Strand'])] = Geometry(feat)
-            }
-        } else if ($feature.toAGAT == 'splitter') {
-            var line_fs = Filter(get_features_switch_yard(line_class, ['GlobalID'], true), strand_sql);
-            to_associated_features = Filter(fs, "globalid IN @contained_ids and " + splitter_junction_sql);
-            for (var feat in to_associated_features) {
-                var intersection = Intersects(line_fs, feat);
-                var new_geo = Geometry(feat);
-                if (Count(intersection) == 0) {
-                    to_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
-                    break
-                } else {
-                    var line_on_end = false;
-                    for (var line_feat in intersection) {
-                        var line_geo_strand = Geometry(line_feat);
-                        var vertices_strand = line_geo_strand['paths'][0];
-                        var from_point_strand = vertices_strand[0];
-                        var to_point_strand = vertices_strand[-1];
-                        if (Round(new_geo['x'], 6) == Round(from_point_strand['x'], 6) &&
-                            Round(new_geo['y'], 6) == Round(from_point_strand['y'], 6)) {
-                            line_on_end = true;
-                            break;
-                        }
-                        if (Round(new_geo['x'], 6) == Round(to_point_strand['x'], 6) &&
-                            Round(new_geo['y'], 6) == Round(to_point_strand['y'], 6)) {
-                            line_on_end = true;
-                            break;
-                        }
-                    }
-                    if (line_on_end) {
-                        continue;
-                    }
-                    to_associated_features_for_splitter = [new_geo.x, new_geo.y, new_geo.z, null];
-                    break
-                }
-            }
-        }
-    }
-}
-
-var offset_dist = 0;
-var perp_dist = .1;
-var from_line = create_perp_line(from_point, geo, offset_dist, perp_dist);
-//return (from_line)
-from_line = adjust_z(from_line, 100);
-from_line = densify(from_line, (length(from_line) / strand_count))['paths'][0];
-var vertex_cnt = count(from_line);
-
-var new_from = [];
-for (var v = 0; v < count(from_line); v++) {
-    if (v == 0 || v == vertex_cnt - 1 || v % (vertex_cnt / strand_count) < 1) {
-        new_from[Count(new_from)] = from_line[v]
-    }
-}
-from_line = new_from;
-
-var to_line = create_perp_line(to_point, geo, offset_dist, perp_dist);
-//return (to_line)
-to_line = adjust_z(to_line, 100);
-to_line = densify(to_line, (length(to_line) / strand_count))['paths'][0];
-var vertex_cnt = count(to_line);
-
-var new_to = [];
-for (var v = 0; v < count(to_line); v++) {
-    if (v == 0 || v == vertex_cnt - 1 || v % (vertex_cnt / strand_count) < 1) {
-        new_to[Count(new_to)] = to_line[v]
-    }
-}
-to_line = new_to;
+// Generate offset lines to move strands to when no port is found
+var from_offeset_line = generate_offset_line(from_point, geo, strand_count, 100);
+var to_offset_line = generate_offset_line(to_point, geo, strand_count, 100);
 
 var attributes = {};
 var line_adds = [];
 var junction_adds = [];
+
+
+function splice_end_point(port_features, prep_line_offset, vertex_index, container_guid) {
+    var new_point = null;
+    var new_feature = null;
+    if (haskey(port_features, Text(vertex_index + 1))) {
+        new_point = port_features[Text(vertex_index + 1)];
+        new_point = [new_point.x, new_point.y, new_point.z, null];
+    } else {
+        var new_feature_attributes = {
+            'AssetGroup': junction_features_AG,
+            'AssetType': junction_features_AT,
+            'Tube': identifier,
+            'Strand': vertex_index + 1,
+            'ContainerGUID': container_guid,
+            'IsSpatial': 0,
+        };
+
+        new_feature = {
+            'geometry': prep_line_offset[vertex_index],
+            'attributes': new_feature_attributes
+        };
+        new_point = prep_line_offset[vertex_index];
+    }
+    return [new_point, new_feature]
+}
 
 for (var j = 0; j < strand_count; j++) {
     attributes = {
@@ -266,76 +261,50 @@ for (var j = 0; j < strand_count; j++) {
     var line_shape = Dictionary(Text(Geometry($feature)));
 
     if ($feature.FromAGAT == 'splice') {
-        var new_from_point = null;
-        if (haskey(from_associated_features_by_strand, Text(j + 1))) {
-            new_from_point = from_associated_features_by_strand[Text(j + 1)];
-            new_from_point = [new_from_point.x, new_from_point.y, new_from_point.z, null];
+        var spice_end_info = splice_end_point(from_port_features, from_offeset_line, j, $feature.FromGUID);
+        if (!IsEmpty(spice_end_info[0])) {
+            line_shape['paths'][0][0] = spice_end_info[0];
         } else {
-            var from_attributes = {
-                'AssetGroup': junction_features_AG,
-                'AssetType': junction_features_AT,
-                'Tube': identifier,
-                'Strand': j + 1,
-                'ContainerGUID': $feature.FromGUID,
-                'IsSpatial': 0,
-            };
-
-            junction_adds[Count(junction_adds)] = {
-                'attributes': from_attributes,
-                'geometry': from_line[j]
-            };
-            new_from_point = from_line[j];
+            line_shape['paths'][0][0] = from_offeset_line[j];
         }
-        line_shape['paths'][0][0] = new_from_point;
+        if (!IsEmpty(spice_end_info[1])) {
+            junction_adds[Count(junction_adds)] = spice_end_info[1];
+        }
+
     } else if ($feature.FromAGAT == 'splitter') {
-        if (count(from_associated_features_for_splitter) > 0) {
-            line_shape['paths'][0][0] = from_associated_features_for_splitter;
+        if (HasKey(from_port_features, 'singleport')) {
+            line_shape['paths'][0][0] = from_port_features['singleport'];
         } else {
-            line_shape['paths'][0][0] = from_line[j];
+            line_shape['paths'][0][0] = from_offeset_line[j];
         }
     } else {
-        line_shape['paths'][0][0] = from_line[j];
+        line_shape['paths'][0][0] = from_offeset_line[j];
     }
 
     if ($feature.ToAGAT == 'splice') {
-
-        var new_to_point = null;
-        if (haskey(to_associated_features_by_strand, Text(j + 1))) {
-            new_to_point = to_associated_features_by_strand[Text(j + 1)];
-            new_to_point = [new_to_point.x, new_to_point.y, new_to_point.z, null];
+        var spice_end_info = splice_end_point(to_port_features, to_offset_line, j, $feature.ToGUID);
+        if (!IsEmpty(spice_end_info[0])) {
+            line_shape['paths'][0][-1] = spice_end_info[0];
         } else {
-            var to_attributes = {
-                'AssetGroup': junction_features_AG,
-                'AssetType': junction_features_AT,
-                'Tube': identifier,
-                'Strand': j + 1,
-                'ContainerGUID': $feature.ToGUID,
-                'IsSpatial': 0,
-            };
-
-            junction_adds[Count(junction_adds)] = {
-                'attributes': to_attributes,
-                'geometry': to_line[j]
-            };
-
-            new_to_point = to_line[j]
+            line_shape['paths'][0][-1] = to_offeset_line[j];
         }
-        line_shape['paths'][0][-1] = new_to_point;
+        if (!IsEmpty(spice_end_info[1])) {
+            junction_adds[Count(junction_adds)] = spice_end_info[1];
+        }
     } else if ($feature.ToAGAT == 'splitter') {
-        if (count(to_associated_features_for_splitter) > 0) {
-            line_shape['paths'][0][-1] = to_associated_features_for_splitter;
+        if (HasKey(to_port_features, 'singleport')) {
+            line_shape['paths'][0][-1] = to_port_features['singleport'];
         } else {
-            line_shape['paths'][0][-1] = to_line[j];
+            line_shape['paths'][0][-1] = to_offset_line[j];
         }
     } else {
-        line_shape['paths'][0][-1] = to_line[j];
+        line_shape['paths'][0][-1] = to_offset_line[j];
     }
     line_adds[Count(line_adds)] = {
         'attributes': attributes,
         'geometry': Polyline(line_shape),
         'associationType': 'content'
     };
-
 }
 
 var edit_payload = [{'className': line_class, 'adds': line_adds}];
