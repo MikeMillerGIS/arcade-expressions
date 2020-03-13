@@ -1,3 +1,7 @@
+// TODO:
+//   Handle Strand B and Tube B on splicing when splice point exist
+//   Handle the loose end splice when more than one cable is being spliced
+
 // This rule will generate contained spatial/non spatial features
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
@@ -68,14 +72,14 @@ function is_even(value) {
     return (Number(value) % 2) == 0;
 }
 
-function adjust_z(line_geo, z_value) {
+function adjust_z(line_geo, z_value, rolling_value) {
     var line_shape = Dictionary(Text(line_geo));
     var new_paths = [];
     for (var i in line_shape['paths']) {
         var current_path = line_shape['paths'][i];
         var new_path = [];
         for (var j in current_path) {
-            new_path[Count(new_path)] = [current_path[j][0], current_path[j][1], z_value];
+            new_path[Count(new_path)] = [current_path[j][0], current_path[j][1], z_value + (j * rolling_value)];
         }
         new_paths[count(new_paths)] = new_path
     }
@@ -85,10 +89,11 @@ function adjust_z(line_geo, z_value) {
 
 function generate_offset_line(point_geo, line_geo, densify_tolerance, z_value) {
     var offset_dist = 0;
-    var perp_dist = .1;
+    var perp_dist = 1;
+    var rolling_value = 1;
     var prep_line = create_perp_line(point_geo, line_geo, offset_dist, perp_dist);
 
-    prep_line = adjust_z(prep_line, z_value);
+    prep_line = adjust_z(prep_line, z_value, rolling_value);
     prep_line = densify(prep_line, (length(prep_line) / densify_tolerance))['paths'][0];
     var vertex_cnt = count(prep_line);
     var new_vertex = [];
@@ -226,13 +231,14 @@ function splice_end_point(port_features, prep_line_offset, vertex_index, contain
     var new_point = null;
     var new_feature = null;
     if (haskey(port_features, Text(vertex_index + 1))) {
+        // TODO, we need to adjust the Port, and update the Stand B and Tube B field
         new_point = port_features[Text(vertex_index + 1)];
     } else {
         var new_feature_attributes = {
             'AssetGroup': new_splice_feature_AG,
             'AssetType': new_splice_feature_AT,
-            'Tube': identifier,
-            'Strand': vertex_index + 1,
+            'TubeA': identifier,
+            'StrandA': vertex_index + 1,
             'ContainerGUID': container_guid,
             'IsSpatial': 0,
         };
@@ -274,8 +280,8 @@ var from_port_features = get_line_ends($feature.FromGUID, $feature.fromsnap);
 var to_port_features = get_line_ends($feature.ToGUID, $feature.tosnap);
 
 // Generate offset lines to move strands to when no port is found
-var from_offset_line = generate_offset_line(from_point, geo, strand_count, 100);
-var to_offset_line = generate_offset_line(to_point, geo, strand_count, 100);
+var from_offset_line = generate_offset_line(from_point, geo, strand_count, from_point['z'] * identifier);
+var to_offset_line = generate_offset_line(to_point, geo, strand_count, to_point['z'] * identifier);
 
 var attributes = {};
 var line_adds = [];

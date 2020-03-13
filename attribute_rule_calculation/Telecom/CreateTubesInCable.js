@@ -1,13 +1,20 @@
 // This rule will generate contained spatial/non spatial features
 
-// ***************************************
+// **************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
-var valid_asset_types = [3];
-
 var identifier = $feature.Identifier;
+// Instead of assigning the rule at the subtype, it is assigned to all subtypes and returns if not valid
+
+// Limit the rule to valid subtypes
+var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
+if (indexof(valid_asset_groups, $feature.assetgroup) == -1) {
+    return identifier;
+}
+
+var valid_asset_types = [3];
 var line_class = 'CommunicationsLine';
 var fiber_count = $feature.ContentCount;
-var cable_design = $feature.CableDesign;
+var tube_count = $feature.TubeCount;
 
 // The Asset Group and Type of the tubes in a cable
 var new_tube_features_AG = 2;
@@ -66,9 +73,12 @@ function is_even(value) {
 }
 
 function get_tube_count() {
+
     // Return the tube count based on strands
     if (fiber_count <= 12) {
         return 1;
+    } else if (fiber_count <= 18) {
+        return 3;
     } else if (fiber_count <= 24) {
         return 2;
     } else if (fiber_count <= 36) {
@@ -143,17 +153,17 @@ if (is_even(fiber_count) == false) {
     return {'errorMessage': 'Fiber count must be even'};
 }
 // Get the tube count based on the cable design and strand count
-var num_tubes = get_tube_count();
-if (IsEmpty(num_tubes)) {
+// tube_count = get_tube_count();
+if (IsEmpty(tube_count)) {
     return {'errorMessage': 'Tube count not be calculated based on the design and fiber count'};
 }
 // Ensure the strand distribution is even
-var strand_per_tube = fiber_count / num_tubes;
+var strand_per_tube = fiber_count / tube_count;
 if (strand_per_tube % 1 != 0) {
     return {
         'errorMessage': 'Fiber per tube distribution is not uniform: ' +
             'Fiber Count:' + fiber_count + TextFormatting.NewLine +
-            'Tube Count:' + num_tubes + TextFormatting.NewLine +
+            'Tube Count:' + tube_count + TextFormatting.NewLine +
             'Strands Per Tube:' + strand_per_tube
     };
 }
@@ -174,7 +184,7 @@ var end_container_snap_type = snapped_container_info[1];
 
 var attributes = {};
 var line_adds = [];
-for (var j = 0; j < num_tubes; j++) {
+for (var j = 0; j < tube_count; j++) {
     attributes = {
         'AssetGroup': new_tube_features_AG,
         'AssetType': new_tube_features_AT,
