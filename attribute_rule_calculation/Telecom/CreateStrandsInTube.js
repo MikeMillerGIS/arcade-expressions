@@ -8,8 +8,8 @@
 var valid_asset_types = [3];
 
 var identifier = $feature.Identifier;
-var line_class = 'CommunicationsLine';
-var device_class = 'CommunicationsDevice';
+var line_class = "CommunicationsLine";
+var device_class = "CommunicationsDevice";
 var strand_count = $feature.ContentCount;
 
 // The device that will be created in a splice when an existing splice location is not found, this is a Port: Splice
@@ -32,16 +32,16 @@ var strand_sql = 'AssetGroup = ' + strands_AG + ' AND  AssetType = ' + strands_A
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
-    if (class_name == 'CommunicationsDevice') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
-    } else if (class_name == 'CommunicationsLine') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsLine', fields, include_geometry);
-    } else if (class_name == 'CommunicationsAssembly') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsAssembly', fields, include_geometry);
+    if (class_name == "CommunicationsDevice") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
+    } else if (class_name == "CommunicationsLine") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
+    } else if (class_name == "CommunicationsAssembly") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsAssembly", fields, include_geometry);
     } else if (class_name == 'Associations') {
         feature_set = FeatureSetByName($datastore, 'UN_5_Associations', fields, false);
     } else {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
+        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
     }
     return feature_set;
 }
@@ -118,12 +118,12 @@ function get_line_ends(container_guid, container_type) {
             contained_ids[count(contained_ids)] = feat['TOGLOBALID']
         }
         if (Count(contained_ids) > 0) {
-            var fs = get_features_switch_yard(device_class, ['Globalid', 'Strand'], true);
+            var fs = get_features_switch_yard(device_class, ['Globalid', 'StrandA'], true);
             if (container_type == 'splice') {
-                port_features = Filter(fs, "globalid IN @contained_ids and tube = @identifier and " + sql_snap_types[container_type]);
+                port_features = Filter(fs, "globalid IN @contained_ids and tubea = @identifier and " + sql_snap_types[container_type]);
                 for (var port_feat in port_features) {
                     new_geo = Geometry(port_feat);
-                    move_line_to_geo[Text(port_feat['Strand'])] = new_geo; //[new_geo.x, new_geo.y, new_geo.z, null];
+                    move_line_to_geo[Text(port_feat['StrandA'])] = new_geo; //[new_geo.x, new_geo.y, new_geo.z, null];
                 }
             } else if (container_type == 'splitter') {
                 // If the cable is snapped to a splitter, look for the next open port and return its geometry, all strands get snapped to the the same location

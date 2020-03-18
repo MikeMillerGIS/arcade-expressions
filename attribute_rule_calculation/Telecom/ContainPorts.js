@@ -6,24 +6,24 @@
 var assigned_to_field = $feature.assetid;
 var valid_asset_types = [143];
 var use_device_as_container = false;
-var device_class = 'CommunicationsDevice';
+var device_class = "CommunicationsDevice";
 var container_class;
 if (use_device_as_container == true) {
     container_class = device_class;
 } else {
-    container_class = 'CommunicationsAssembly';
+    container_class = "CommunicationsAssembly";
 }
 // Get Feature Switch yard, adjust the string literals to match your GDB feature class names
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
 
-    if (class_name == 'CommunicationsDevice') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
-    } else if (class_name == 'CommunicationsAssembly') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsAssembly', fields, include_geometry);
+    if (class_name == "CommunicationsDevice") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
+    } else if (class_name == "CommunicationsAssembly") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsAssembly", fields, include_geometry);
     } else {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
+        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
     }
     return feature_set;
 }
