@@ -403,16 +403,13 @@ for (var j = 0; j < strand_count; j++) {
     } else {
         line_shape['paths'][0][-1] = point_to_array(to_offset_line[j]);
     }
-    if (IsEmpty(line_shape)){
-        return 'f'
-    }}
+
     line_adds[Count(line_adds)] = {
         'attributes': attributes,
-        'geometry': Polyline({'paths': line_shape['paths'].'spatialReference': line_shape['spatialReference']),
+        'geometry': Polyline(line_shape),//Polyline({'paths': line_shape['paths'], 'spatialReference': line_shape['spatialReference']}),
         'associationType': 'content'
     };
 }
-return line_adds
 var edit_payload = [{'className': line_class, 'adds': line_adds}];
 if (Count(junction_adds) > 0) {
     edit_payload[Count(edit_payload)] = {'className': device_class, 'adds': junction_adds}
