@@ -47,44 +47,9 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
 }
 
 // ************* to Section *****************
-function create_perp_line(location, line_geo, dist, length_line) {
-    //Get the fist point of the line
-    var line_vertices = line_geo['paths'][0];
-    var line_from_point = line_vertices[0];
-
-    //Buffer the point and clip the line
-    var search = Extent(Buffer(location, length_line));
-    var segment = Clip(line_geo, search);
-    var segment_vertices = segment['paths'][0];
-    var segment_from_point = segment_vertices[0];
-    segment = Rotate(segment, 90);
-    var offset_dist = iif(length_line / 2 > dist, length_line / 2 - dist, -(dist - length_line / 2));
-    if (points_snapped(segment_from_point, line_from_point)) {
-        segment = offset(segment, -offset_dist);
-    } else {
-        segment = offset(segment, offset_dist);
-
-    }
-    return segment;
-}
 
 function is_even(value) {
     return (Number(value) % 2) == 0;
-}
-
-function adjust_z(line_geo, z_value, rolling_value) {
-    var line_shape = Dictionary(Text(line_geo));
-    var new_paths = [];
-    for (var i in line_shape['paths']) {
-        var current_path = line_shape['paths'][i];
-        var new_path = [];
-        for (var j in current_path) {
-            new_path[Count(new_path)] = [current_path[j][0], current_path[j][1], z_value + (j * rolling_value)];
-        }
-        new_paths[count(new_paths)] = new_path
-    }
-    line_shape['paths'] = new_paths;
-    return Polyline(line_shape)
 }
 
 function intersects_at_end_points(fs, feat, allowable_edges) {
@@ -114,23 +79,34 @@ function intersects_at_end_points(fs, feat, allowable_edges) {
     }
 }
 
-function generate_offset_line(point_geo, line_geo, densify_tolerance, z_value) {
-    var offset_dist = 0;
-    var perp_dist = 1;
-    var rolling_value = 1;
-    var prep_line = create_perp_line(point_geo, line_geo, offset_dist, perp_dist);
+function generate_offset_lines(number_vertex, vertex_spacing, z_offset) {
+    var line_geo = Geometry($feature);
 
-    prep_line = adjust_z(prep_line, z_value, rolling_value);
-    prep_line = densify(prep_line, (length(prep_line) / densify_tolerance))['paths'][0];
-    var vertex_cnt = count(prep_line);
-    var new_vertex = [];
-    for (var v = 0; v < count(prep_line); v++) {
-        if (v == 0 || v == vertex_cnt - 1 || v % (vertex_cnt / densify_tolerance) < 1) {
-            new_vertex[Count(new_vertex)] = prep_line[v]; //[prep_line[v]['x'], prep_line[v]['y'], prep_line[v]['z'], null]
+    var offset_lines = [];
+    var offset_value = (number_vertex * vertex_spacing) / 2
+    for (var j = 0; j < number_vertex; j++) {
+        offset_lines[Count(offset_lines)] = offset(line_geo, offset_value);
+        offset_value = offset_value - vertex_spacing
+        // Skip original line location
+        if (offset_value == 0) {
+            offset_value = offset_value - vertex_spacing
         }
     }
-    return new_vertex
 
+    var from_vertices = [];
+    var to_vertices = [];
+    var vertices;
+    var from_point;
+    var to_point;
+
+    for (var i in offset_lines) {
+        vertices = Geometry(offset_lines[i])['paths'][0];
+        from_point = vertices[0];
+        to_point = vertices[-1];
+        from_vertices[i] = [from_point['x'], from_point['y'], from_point['z'] * (z_offset * i), null]
+        to_vertices[i] = [to_point['x'], to_point['y'], to_point['z'] * (z_offset * i), null]
+    }
+    return [from_vertices, to_vertices];
 }
 
 function get_line_ends(container_guid, container_type) {
@@ -315,7 +291,7 @@ if (is_even(strand_count) == false) {
 }
 
 // Get the from and to vertex of the line
-var geo = Geometry($feature);
+var tube_geo = Geometry($feature);
 var vertices = geo['paths'][0];
 var from_point = vertices[0];
 var to_point = vertices[-1];
@@ -324,8 +300,9 @@ var from_port_features = get_line_ends($feature.FromGUID, $feature.fromsnap);
 var to_port_features = get_line_ends($feature.ToGUID, $feature.tosnap);
 
 // Generate offset lines to move strands to when no port is found
-var from_offset_line = generate_offset_line(from_point, geo, strand_count, from_point['z'] * identifier);
-var to_offset_line = generate_offset_line(to_point, geo, strand_count, to_point['z'] * identifier);
+var results = generate_offset_lines(Geometry($feature), strand_count, identifier);
+var from_offset_line = results[0]
+var to_offset_line = results[1]
 
 var attributes = {};
 var line_adds = [];

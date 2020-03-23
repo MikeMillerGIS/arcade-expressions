@@ -12,7 +12,7 @@ if (indexof(valid_asset_groups, $feature.assetgroup) == -1) {
 }
 
 var valid_asset_types = [3];
-var line_class = 'CommunicationsLine';
+var line_class = "CommunicationsLine";
 var fiber_count = $feature.ContentCount;
 var tube_count = $feature.TubeCount;
 
@@ -27,26 +27,26 @@ var device_fs = FeatureSetByName($datastore, "CommunicationsDevice", ["globalid"
 //Device,Asset Group=(1,2,5,6,7),Asset Type=1 acts as a pass-through
 var sql_snap_types = {
     'splitter': [
-        '(AssetGroup = 3 and AssetType = 1) or (AssetGroup = 1 and AssetType = 4) or (AssetGroup = 2 and AssetType = 4) or (AssetGroup = 3 and AssetType = 4) or (AssetGroup = 5 and AssetType = 4) or (AssetGroup = 6 and AssetType = 4) or (AssetGroup = 7 and AssetType = 4)',
-        '(AssetGroup = 3 and AssetType = 1) or (AssetGroup = 1 and AssetType = 4) or (AssetGroup = 2 and AssetType = 4) or (AssetGroup = 3 and AssetType = 4) or (AssetGroup = 5 and AssetType = 4) or (AssetGroup = 6 and AssetType = 4) or (AssetGroup = 7 and AssetType = 4)'],
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (4))',
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (4))'],
     'splice': [
-        '(AssetGroup = 1 and AssetType = 3) or (AssetGroup = 2 and AssetType = 3) or (AssetGroup = 3 and AssetType = 3) or (AssetGroup = 5 and AssetType = 3) or (AssetGroup = 6 and AssetType = 3) or (AssetGroup = 7 and AssetType = 3)',
-        '(AssetGroup = 1 and AssetType = 3) or (AssetGroup = 2 and AssetType = 3) or (AssetGroup = 3 and AssetType = 3) or (AssetGroup = 5 and AssetType = 3) or (AssetGroup = 6 and AssetType = 3) or (AssetGroup = 7 and AssetType = 3)'],
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (3,5))',
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (3,5))'],
     'pass-through': [
-        '(AssetGroup = 1 and AssetType = 1) or (AssetGroup = 2 and AssetType = 1) or (AssetGroup = 5 and AssetType = 1) or (AssetGroup = 6 and AssetType = 1) or (AssetGroup = 7 and AssetType = 1)',
-        '(AssetGroup = 1 and AssetType = 1) or (AssetGroup = 2 and AssetType = 1) or (AssetGroup = 5 and AssetType = 1) or (AssetGroup = 6 and AssetType = 1) or (AssetGroup = 7 and AssetType = 1)']
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (1))',
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (1))']
 };
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
 
-    if (class_name == 'CommunicationsDevice') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
-    } else if (class_name == 'CommunicationsAssembly') {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsAssembly', fields, include_geometry);
+    if (class_name == "CommunicationsDevice") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
+    } else if (class_name == "CommunicationsAssembly") {
+        feature_set = FeatureSetByName($datastore, "CommunicationsAssembly", fields, include_geometry);
     } else {
-        feature_set = FeatureSetByName($datastore, 'CommunicationsDevice', fields, include_geometry);
+        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
     }
     return feature_set;
 }
