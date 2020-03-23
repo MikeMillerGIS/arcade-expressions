@@ -62,8 +62,8 @@ function intersects_at_end_points(fs, feat, allowable_edges) {
         // Check if feature is at end/start
         var snapped_edges = 0;
         for (var line_feat in intersection) {
-            // If the line is snapped at a end/start, check the min edge count, return if exceeded
-            if (point_on_start_end(feat, Geometry(line_feat))) {
+
+            if (point_on_start_end(Geometry(feat), Geometry(line_feat))) {
                 snapped_edges += 1;
                 if (snapped_edges > _allowable_edges) {
                     return true
@@ -159,6 +159,7 @@ function get_line_ends(container_guid, container_type) {
                 // Loop through all valid ports in the container
                 for (var port_feat in port_features) {
                     // Intersect the existing strands to find a port without a strand connected to it
+
                     if (intersects_at_end_points(line_fs, port_feat, 0) == false) {
                         scale_to_all_strands = {
                             'geometry': Geometry(port_feat),    //[new_geo.x, new_geo.y, new_geo.z, null];
@@ -344,13 +345,13 @@ for (var j = 0; j < strand_count; j++) {
 
     } else if ($feature.fromsnap == 'splitter') {
         if (cnt_from_open_ports > 0) {
-            line_shape['paths'][0][0] = point_to_array(from_port_features['openport'][0]);
+            line_shape['paths'][0][0] = point_to_array(from_port_features['openport'][0]['geometry']);
         } else {
             line_shape['paths'][0][0] = point_to_array(from_offset_line[j]);
         }
     } else if ($feature.fromsnap == 'pass-through') {
         if (cnt_from_open_ports > j) {
-            line_shape['paths'][0][0] = point_to_array(from_port_features['openport'][j]);
+            line_shape['paths'][0][0] = point_to_array(from_port_features['openport'][j]['geometry']);
         } else {
             line_shape['paths'][0][0] = point_to_array(from_offset_line[j]);
         }
@@ -373,13 +374,13 @@ for (var j = 0; j < strand_count; j++) {
         }
     } else if ($feature.tosnap == 'splitter') {
         if (cnt_to_open_ports > 0) {
-            line_shape['paths'][0][-1] = point_to_array(to_port_features['openport'][0]);
+            line_shape['paths'][0][-1] = point_to_array(to_port_features['openport'][0]['geometry']);
         } else {
             line_shape['paths'][0][-1] = point_to_array(to_offset_line[j]);
         }
     } else if ($feature.tosnap == 'pass-through') {
         if (cnt_to_open_ports > j) {
-            line_shape['paths'][0][-1] = point_to_array(to_port_features['openport'][j]);
+            line_shape['paths'][0][-1] = point_to_array(to_port_features['openport'][j]['geometry']);
         } else {
             line_shape['paths'][0][-1] = point_to_array(to_offset_line[j]);
         }
