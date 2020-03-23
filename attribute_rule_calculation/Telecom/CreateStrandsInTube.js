@@ -1,7 +1,3 @@
-// TODO:
-//   Handle Strand B and Tube B on splicing when splice point exist
-//   Handle the loose end splice when more than one cable is being spliced
-
 // This rule will generate contained spatial/non spatial features
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
@@ -81,16 +77,17 @@ function intersects_at_end_points(fs, feat, allowable_edges) {
 
 function generate_offset_lines(number_vertex, vertex_spacing, z_offset) {
     var line_geo = Geometry($feature);
-
+    var sr = line_geo.spatialReference;
     var offset_lines = [];
-    var offset_value = (number_vertex * vertex_spacing) / 2
+    var offset_value = iif(is_even(number_vertex), (number_vertex / 2) * vertex_spacing, (number_vertex / 2) * vertex_spacing)
     for (var j = 0; j < number_vertex; j++) {
-        offset_lines[Count(offset_lines)] = offset(line_geo, offset_value);
-        offset_value = offset_value - vertex_spacing
-        // Skip original line location
-        if (offset_value == 0) {
-            offset_value = offset_value - vertex_spacing
+        if (offset_value > -.1 && offset_value < .1) {
+            offset_value = offset_value - vertex_spacing;
         }
+        offset_lines[j] = offset(line_geo, offset_value);
+        offset_value = offset_value - vertex_spacing;
+        // Skip original line location
+
     }
 
     var from_vertices = [];
@@ -100,11 +97,21 @@ function generate_offset_lines(number_vertex, vertex_spacing, z_offset) {
     var to_point;
 
     for (var i in offset_lines) {
-        vertices = Geometry(offset_lines[i])['paths'][0];
+        vertices = offset_lines[i]['paths'][0];
         from_point = vertices[0];
         to_point = vertices[-1];
-        from_vertices[i] = [from_point['x'], from_point['y'], from_point['z'] * (z_offset * i), null]
-        to_vertices[i] = [to_point['x'], to_point['y'], to_point['z'] * (z_offset * i), null]
+        from_vertices[i] = Point({
+            'x': from_point['x'],
+            'y': from_point['y'],
+            'z': from_point['z'] * (z_offset * i),
+            "spatialReference": sr
+        })
+        to_vertices[i] = Point({
+            'x': to_point['x'],
+            'y': to_point['y'],
+            'z': to_point['z'] * (z_offset * i),
+            "spatialReference": sr
+        })
     }
     return [from_vertices, to_vertices];
 }
@@ -220,10 +227,13 @@ function point_to_array(point_geo) {
     if (IsEmpty(point_geo)) {
         return null
     }
+    if (typeof (point_geo) == 'Array') {
+        return point_geo;
+    }
     if (HasKey(Dictionary(Text(point_geo)), 'x') == false) {
         return null
     }
-    return [point_geo.x, point_geo.y, point_geo.z, null]
+    return [point_geo.x, point_geo.y, point_geo.z, 0]
 }
 
 function splice_end_point(port_features, prep_line_offset, vertex_index, container_guid) {
@@ -290,17 +300,12 @@ if (is_even(strand_count) == false) {
     return {'errorMessage': 'Fiber count must be even'};
 }
 
-// Get the from and to vertex of the line
-var tube_geo = Geometry($feature);
-var vertices = geo['paths'][0];
-var from_point = vertices[0];
-var to_point = vertices[-1];
 // Get the from and to features the strands need to be adjusted too
 var from_port_features = get_line_ends($feature.FromGUID, $feature.fromsnap);
 var to_port_features = get_line_ends($feature.ToGUID, $feature.tosnap);
 
 // Generate offset lines to move strands to when no port is found
-var results = generate_offset_lines(Geometry($feature), strand_count, identifier);
+var results = generate_offset_lines(iif(strand_count < 3, 3, strand_count), .1, identifier);
 var from_offset_line = results[0]
 var to_offset_line = results[1]
 
@@ -324,6 +329,7 @@ for (var j = 0; j < strand_count; j++) {
     var line_shape = Dictionary(Text(Geometry($feature)));
     if ($feature.fromsnap == 'splice') {
         var splice_from_info = splice_end_point(from_port_features, from_offset_line, j, $feature.FromGUID);
+
         if (!IsEmpty(splice_from_info[0])) {
             line_shape['paths'][0][0] = point_to_array(splice_from_info[0]);
         } else {

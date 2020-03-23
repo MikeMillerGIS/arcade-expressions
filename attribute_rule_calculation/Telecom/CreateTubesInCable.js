@@ -199,8 +199,9 @@ for (var j = 0; j < tube_count; j++) {
     attributes['ContentCount'] = strand_per_tube;
     // Convert the shape to a dict for manipulation
     var line_shape = Dictionary(Text(Geometry($feature)));
+    var tube_spacing = .5;
     // Create an offset value so the tubes are offset on both sides of the cables
-    var offset_value = iif(is_even(j), Ceil((j + 1) / 2) * .1, -(Ceil((j + 1) / 2) * .1));
+    var offset_value = iif(is_even(j), Ceil((j + 1) / 2) * tube_spacing, -(Ceil((j + 1) / 2) * tube_spacing));
     line_adds[Count(line_adds)] = {
         'attributes': attributes,
         'geometry': offset(adjust_z(Polyline(line_shape), j + 10), offset_value),
