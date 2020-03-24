@@ -48,31 +48,19 @@ function is_even(value) {
     return (Number(value) % 2) == 0;
 }
 
-function intersects_at_end_points(fs, feat, allowable_edges) {
-    // Store as a local as variables are by reference and mutable
-    var _allowable_edges = allowable_edges;
-    if (IsEmpty(_allowable_edges)) {
-        _allowable_edges = 0;
-    }
-    var intersection = Intersects(fs, feat);
-    if (Count(intersection) == 0) {
-        // Feature does not intersect the fs
-        return false;
-    } else {
+function intersects_at_end_points(fs, point_geo) {
+    var snapped_edges = 0;
+    var intersection = Intersects(fs, point_geo);
+    if (Count(intersection) > 0) {
         // Check if feature is at end/start
-        var snapped_edges = 0;
         for (var line_feat in intersection) {
-
-            if (point_on_start_end(Geometry(feat), Geometry(line_feat))) {
+            if (point_on_start_end(point_geo, Geometry(line_feat))) {
                 snapped_edges += 1;
-                if (snapped_edges > _allowable_edges) {
-                    return true
-                }
-
             }
         }
-        return false
+
     }
+    return snapped_edges
 }
 
 function generate_offset_lines(number_vertex, vertex_spacing, z_offset) {
@@ -133,7 +121,16 @@ function get_line_ends(container_guid, container_type) {
             port_features = Filter(fs, "globalid IN @contained_ids and " + sql_snap_types[container_type]);
             if (container_type == 'splice') {
                 for (var port_feat in port_features) {
-                    if (intersects_at_end_points(line_fs, Geometry(port_feat), 1) == false) {
+                    var port_geo = Geometry(port_feat);
+                    var edge_at_ends_cnt = intersects_at_end_points(line_fs, port_geo)
+
+                    if (edge_at_ends_cnt == 0) {
+                        open_port_mapping['openport'][Count(open_port_mapping['openport'])] = {
+                            'geometry': port_geo,    //[new_geo.x, new_geo.y, new_geo.z, null];
+                            'globalid': port_feat.globalid,
+                            'available': true
+                        };
+                    } else {
                         // Init the port mapping by the existing strand info from the Tube A and Strand A field
                         var tube_txt = Text(port_feat['TubeA'])
                         var strand_txt = Text(port_feat['StrandA'])
@@ -146,10 +143,9 @@ function get_line_ends(container_guid, container_type) {
                         // In the odd chance there is duplicate tube/strand combos, handle as an array. with a flag if available
                         var cur_idx = Count(open_port_mapping[tube_txt][strand_txt]);
                         open_port_mapping[tube_txt][strand_txt][cur_idx] = {
-                            //'feature': port_feat,
                             'geometry': Geometry(port_feat),
                             'globalid': port_feat.globalid,
-                            'available': true
+                            'available': edge_at_ends_cnt == 1
                         }
                     }
                 }
@@ -159,10 +155,10 @@ function get_line_ends(container_guid, container_type) {
                 // Loop through all valid ports in the container
                 for (var port_feat in port_features) {
                     // Intersect the existing strands to find a port without a strand connected to it
-
-                    if (intersects_at_end_points(line_fs, port_feat, 0) == false) {
+                    var port_geo = Geometry(port_feat);
+                    if (intersects_at_end_points(line_fs, port_geo) == 0) {
                         scale_to_all_strands = {
-                            'geometry': Geometry(port_feat),    //[new_geo.x, new_geo.y, new_geo.z, null];
+                            'geometry': port_geo,    //[new_geo.x, new_geo.y, new_geo.z, null];
                             'globalid': port_feat.globalid,
                             'available': true
                         }
@@ -176,9 +172,10 @@ function get_line_ends(container_guid, container_type) {
                 // If the cable is snapped to a cable termination, look for the next open port and return its geometry, each strand will be snapped to the next open port
                 for (var port_feat in port_features) {
                     // Intersect the existing strands to find a port without a strand connected to it
-                    if (intersects_at_end_points(line_fs, port_feat, 0) == false) {
+                    var port_geo = Geometry(port_feat);
+                    if (intersects_at_end_points(line_fs, port_geo) == 0) {
                         open_port_mapping['openport'][Count(open_port_mapping['openport'])] = {
-                            'geometry': Geometry(port_feat),    //[new_geo.x, new_geo.y, new_geo.z, null];
+                            'geometry': port_geo,    //[new_geo.x, new_geo.y, new_geo.z, null];
                             'globalid': port_feat.globalid,
                             'available': true
                         };
@@ -203,6 +200,21 @@ function points_snapped(point_a, point_b) {
     return (Round(point_a.x, 6) == Round(point_b.x, 6) &&
         Round(point_a.y, 6) == Round(point_b.y, 6) &&
         Round(point_a.z, 6) == Round(point_b.z, 6))
+
+}
+
+function keys_to_list(dict) {
+    if (IsEmpty(dict)) {
+        return []
+    }
+    var keys = []
+    for (var k in dict) {
+        var res = number(k)
+        if (!IsNan(res)) {
+            keys[count(keys)] = res
+        }
+    }
+    return sort(keys)
 
 }
 
@@ -244,13 +256,45 @@ function splice_end_point(port_features, prep_line_offset, vertex_index, contain
     var matching_strand_available = false;
     var open_port = null;
     // Find an open available port
+    var strand_id = Text(vertex_index + 1);
+
+    // Search for a matching tube/strand
     if (haskey(port_features, Text(identifier))) {
-        if (haskey(port_features[Text(identifier)], Text(vertex_index + 1))) {
-            for (var idx in port_features[Text(identifier)][Text(vertex_index + 1)]) {
-                if (port_features[Text(identifier)][Text(vertex_index + 1)][idx]['available']) {
-                    open_port = port_features[Text(identifier)][Text(vertex_index + 1)][idx]
+        var avail_tube = port_features[Text(identifier)]
+        if (haskey(avail_tube, strand_id) == true) {
+            var ports_in_tubes = avail_tube[strand_id]
+            for (var open_port_idx in ports_in_tubes) {
+                if (ports_in_tubes[open_port_idx]['available'] == true) {
+                    open_port = ports_in_tubes[open_port_idx]
+                    open_port['available'] = false;
                     break;
                 }
+            }
+        }
+    }
+
+    // If a splice port with matchsing strand info on A side is not availale, find an open splice, starting at the end
+    if (IsEmpty(open_port)) {
+        var tube_keys = keys_to_list(port_features);
+        for (var tube_idx = count(tube_keys) - 1; tube_idx >= 0; tube_idx--) {
+            var avail_tube = port_features[Text(tube_keys[tube_idx])]
+            var port_keys = keys_to_list(avail_tube);
+            for (var port_idx = count(port_keys) - 1; port_idx >= 0; port_idx--) {
+                var ports_in_tubes = avail_tube[Text(port_keys[port_idx])]
+                for (var open_port_idx in ports_in_tubes) {
+
+                    if (ports_in_tubes[open_port_idx]['available'] == true) {
+                        open_port = ports_in_tubes[open_port_idx]
+                        ports_in_tubes[open_port_idx]['available'] = false;
+                        break;
+                    }
+                }
+                if (!IsEmpty(open_port)) {
+                    break;
+                }
+            }
+            if (!IsEmpty(open_port)) {
+                break;
             }
         }
     }
@@ -264,7 +308,6 @@ function splice_end_point(port_features, prep_line_offset, vertex_index, contain
             'attributes': update_feature_attributes
         };
         end_point = open_port['geometry'];
-        open_port['available'] = false;
     } else {
         var new_feature_attributes = {
             'AssetGroup': new_splice_feature_AG,
