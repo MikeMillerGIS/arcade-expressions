@@ -46,9 +46,9 @@ new_line = offset(rotate(new_line, 90 - sym_rotation), offset_distance);
 var new_strand_ends = [];
 var first_path = new_line['paths'][0];
 for (var i in first_path) {
-    point_x = first_path[0];
-    point_y = first_path[1];
-    point_z = first_path[2];
+    point_x = first_path[i][0];
+    point_y = first_path[i][1];
+    point_z = first_path[i][2];
     new_strand_ends[i] = {
         'attributes': {
             'assetgroup': port_ag,
