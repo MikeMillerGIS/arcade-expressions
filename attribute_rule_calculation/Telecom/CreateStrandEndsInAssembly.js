@@ -26,33 +26,42 @@ var port_at = 144;
 // ************* End Section *****************
 
 var point_geo = Geometry($feature);
+var wkid = point_geo.spatialReference.wkid;
 var point_y = point_geo.Y;
 point_y = point_y - (point_count / 2 * point_spacing);
 var point_z = point_geo.Z;
 point_z = point_z - (point_count / 2 * point_spacing);
 var point_x = point_geo.X;
 var vertices = [];
+
 for (var i = 0; i < point_count; i++) {
+
     vertices[i] = [point_x, point_y, point_z];
     point_y = point_y + point_spacing;
     point_z = point_z + point_spacing;
 }
-var new_line = Polyline({
-    "paths": [vertices],
-    "spatialReference": {"wkid": point_geo.spatialReference.wkid}
-});
+var new_line = Polyline({"paths": [vertices], "spatialReference": {"wkid": point_geo.spatialReference.wkid}});
 new_line = offset(rotate(new_line, 90 - sym_rotation), offset_distance);
 
-var edit_payload = [{
-    'className': device_class,
-    'adds': [{
+var new_strand_ends = [];
+var first_path = new_line['paths'][0];
+for (var i in first_path) {
+    point_x = first_path[0];
+    point_y = first_path[1];
+    point_z = first_path[2];
+    new_strand_ends[i] = {
         'attributes': {
             'assetgroup': port_ag,
             'assettype': port_at
         },
-        'geometry': new_line,
+        'geometry': Point({"x": point_x, "y": point_y, "z": point_z, "spatialReference": {"wkid": wkid}}),
         'associationType': 'content'
-    }]
+    };
+}
+
+var edit_payload = [{
+    'className': device_class,
+    'adds': new_strand_ends
 }];
 return {"result": assigned_to_field, "edit": edit_payload};
 
