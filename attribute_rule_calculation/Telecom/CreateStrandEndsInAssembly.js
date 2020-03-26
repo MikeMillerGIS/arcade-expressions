@@ -27,24 +27,28 @@ var port_at = 144;
 
 var point_geo = Geometry($feature);
 var wkid = point_geo.spatialReference.wkid;
+// Store the geometry of the point.  Offset the y and Z to get a vertical line that represents the upper coordinate
 var point_y = point_geo.Y;
 point_y = point_y - (point_count / 2 * point_spacing);
 var point_z = point_geo.Z;
 point_z = point_z - (point_count / 2 * point_spacing);
 var point_x = point_geo.X;
+
+// Loop over the point count and add a vertex using the spacing
 var vertices = [];
-
 for (var i = 0; i < point_count; i++) {
-
     vertices[i] = [point_x, point_y, point_z];
     point_y = point_y + point_spacing;
     point_z = point_z + point_spacing;
 }
+// Create a new line, rotate it based on user field and offset to spread it from the placed point
 var new_line = Polyline({"paths": [vertices], "spatialReference": {"wkid": point_geo.spatialReference.wkid}});
 new_line = offset(rotate(new_line, 90 - sym_rotation), offset_distance);
-
-var new_strand_ends = [];
+// Get the first path on the new line
 var first_path = new_line['paths'][0];
+
+// Loop over the path and construct a point at each vertex and return as a strand end
+var new_strand_ends = [];
 for (var i in first_path) {
     point_x = first_path[i][0];
     point_y = first_path[i][1];
