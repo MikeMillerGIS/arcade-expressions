@@ -29,9 +29,9 @@ var point_geo = Geometry($feature);
 var wkid = point_geo.spatialReference.wkid;
 // Store the geometry of the point.  Offset the y and Z to get a vertical line that represents the upper coordinate
 var point_y = point_geo.Y;
-point_y = point_y - (point_count / 2 * point_spacing);
+point_y = point_y - (floor(point_count / 2) * point_spacing);
 var point_z = point_geo.Z;
-point_z = point_z - (point_count / 2 * point_spacing);
+point_z = point_z - (floor(point_count / 2) * point_spacing);
 var point_x = point_geo.X;
 
 // Loop over the point count and add a vertex using the spacing
