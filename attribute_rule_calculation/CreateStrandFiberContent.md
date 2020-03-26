@@ -28,8 +28,8 @@ var identifier = $feature.Identifier;
 var device_class = 'CommunicationsDevice';
 var line_class = 'CommunicationsLine';
 var rule_type = "create_tubes"; //create_tubes or create_strands
-    var fiber_count = $feature.ContentCount;
-    var cable_design = $feature.CableDesign;
+var fiber_count = $feature.ContentCount;
+var cable_design = $feature.CableDesign;
 
 var create_end_junctions;
 var contained_features_AG;
