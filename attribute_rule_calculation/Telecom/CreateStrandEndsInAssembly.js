@@ -50,7 +50,8 @@ var edit_payload = [{
             'assetgroup': port_ag,
             'assettype': port_at
         },
-        'geometry': new_line
+        'geometry': new_line,
+        'associationType': 'content'
     }]
 }];
 return {"result": assigned_to_field, "edit": edit_payload};
