@@ -6,8 +6,8 @@ var assigned_to_field = $feature.terminatorspacing;
 // Instead of assigning the rule at the subtype, it is assigned to all subtypes and returns if not valid
 
 // Limit the rule to valid subtypes
-var valid_asset_groups = [];
-var valid_asset_types = [];
+var valid_asset_groups = [1,2,3,5,6,7];
+var valid_asset_types = [1];
 if (count(valid_asset_groups) > 0 && indexof(valid_asset_groups, $feature.assetgroup) == -1) {
     return assigned_to_field;
 }
@@ -21,7 +21,7 @@ var sym_rotation = DefaultValue($feature.symbolrotation, 0);
 var offset_distance = DefaultValue($feature.terminatoroffset, 0);
 
 
-var device_class = 'CommunicationDevice';
+var device_class = 'CommunicationsDevice';
 var port_ag = 8;
 var port_at = 144;
 // ************* End Section *****************
