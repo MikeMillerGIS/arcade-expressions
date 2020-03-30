@@ -72,4 +72,3 @@ var edit_payload = [{
     'adds': new_strand_ends
 }];
 return {"result": assigned_to_field, "edit": edit_payload};
-

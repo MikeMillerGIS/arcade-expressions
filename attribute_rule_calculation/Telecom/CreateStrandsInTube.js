@@ -14,7 +14,7 @@ var new_splice_feature_AT = 143;
 // This sql represents the port devices that the strand will snap to the equipment type that the cable snaps to
 // The strand looks inside the snapped to assembly, to find devices of this type
 var sql_snap_types = {
-    'splitter': 'AssetGroup = 8 AND AssetType = 142', // Port: Splitter Out
+    'splitter': 'AssetGroup = 8 AND (AssetType = 142 OR AssetType = 141)', // Port: Splitter Out
     'splice': 'AssetGroup = ' + new_splice_feature_AG + ' AND AssetType = ' + new_splice_feature_AT, // Port: Splice
     'pass-through': 'AssetGroup = 8 AND AssetType = 144' // Port: Strand Termination
 };
@@ -339,10 +339,10 @@ if (IsEmpty(strand_count) || strand_count == 0) {
     return {'errorMessage': 'A value is required for the content count field'};
 }
 
-// Fiber count must be event
-if (is_even(strand_count) == false) {
-    return {'errorMessage': 'Fiber count must be even'};
-}
+// // Fiber count must be event
+// if (is_even(strand_count) == false) {
+//     return {'errorMessage': 'Fiber count must be even'};
+// }
 
 // Get the from and to features the strands need to be adjusted too
 var from_port_features = get_line_ends($feature.FromGUID, $feature.fromsnap);

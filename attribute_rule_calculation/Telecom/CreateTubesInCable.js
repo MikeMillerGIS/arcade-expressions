@@ -27,8 +27,8 @@ var device_fs = FeatureSetByName($datastore, "CommunicationsDevice", ["globalid"
 //Device,Asset Group=(1,2,5,6,7),Asset Type=1 acts as a pass-through
 var sql_snap_types = {
     'splitter': [
-        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (4))',
-        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (4))'],
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (4,6))',
+        '(AssetGroup in (1,3,4,5,6,7) and AssetType in (4,6))'],
     'splice': [
         '(AssetGroup in (1,3,4,5,6,7) and AssetType in (3,5))',
         '(AssetGroup in (1,3,4,5,6,7) and AssetType in (3,5))'],
@@ -148,8 +148,8 @@ if (indexof(valid_asset_types, $feature.assettype) == -1) {
 if (IsEmpty(fiber_count) || fiber_count == 0) {
     return {'errorMessage': 'A value is required for the content count field'};
 }
-// Fiber count must be event
-if (is_even(fiber_count) == false) {
+// Fiber count must be even if not 1 strand
+if (fiber_count > 1 && is_even(fiber_count) == false) {
     return {'errorMessage': 'Fiber count must be even'};
 }
 // Get the tube count based on the cable design and strand count
@@ -158,8 +158,8 @@ if (IsEmpty(tube_count)) {
     return {'errorMessage': 'Tube count not be calculated based on the design and fiber count'};
 }
 // Ensure the strand distribution is even
-var strand_per_tube = fiber_count / tube_count;
-if (strand_per_tube % 1 != 0) {
+var strand_per_tube = iif(fiber_count == 1, 1, fiber_count / tube_count);
+if (strand_per_tube > 1 && strand_per_tube % 1 != 0) {
     return {
         'errorMessage': 'Fiber per tube distribution is not uniform: ' +
             'Fiber Count:' + fiber_count + TextFormatting.NewLine +
