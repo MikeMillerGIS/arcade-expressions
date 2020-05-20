@@ -1,3 +1,19 @@
+// Assigned To: Any UN Class
+// Name: Auto Contain <Class>
+// Description: Uses the rule table to contain feature in a container within a search distance
+// Subtypes: All
+// Field: ASSOCIATIONSTATUS
+// Execute: Insert, Update
+
+// *************       User Variables       *************
+// This section has the functions and variables that need to be adjusted based on your implementation
+var assigned_to_field = $feature.ASSOCIATIONSTATUS;
+var search_distance = 200; //DefaultValue($feature.searchdistance, 75);
+var search_unit = 9002;
+
+// ************* End User Variables Section ************
+
+// *************       Functions            *************
 function class_id_to_name(id) {
     if (id == 3 || id == '3') {
         return 'StructureJunction';
@@ -91,7 +107,6 @@ function build_sql(container_info, feat_global_id) {
 }
 
 function generate_edit_payload(feature, sql_by_class, search_shape) {
-    var edit_payload = null;
     for (var i = 0; i < Count(sql_by_class); i++) {
         var class_name = sql_by_class[i][0];
         var where = sql_by_class[i][1];
@@ -141,9 +156,7 @@ function has_bit(num, test_value) {
 
 }
 
-var assigned_to_field = $feature.ASSOCIATIONSTATUS;
-var search_distance = 200; //DefaultValue($feature.searchdistance, 75);
-var search_unit = 9002;
+// ************* End Functions Section *****************
 
 // If the feature is already content, return
 if (has_bit(assigned_to_field, 4) || has_bit(assigned_to_field, 16)) {
