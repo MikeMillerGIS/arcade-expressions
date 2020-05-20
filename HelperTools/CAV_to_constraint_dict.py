@@ -1,3 +1,5 @@
+# TODO: this has not been updated to handle Any
+
 import arcpy
 import pandas as pd
 import os
@@ -43,7 +45,7 @@ for df in view_cav(fc, desc.subtypeFieldName):
         func = f'''
 // Assigned To: {os.path.basename(fc)}
 // Type: Constraint
-// Name: {field_group_name}
+// Name: {field_group_name} for {os.path.basename(fc)}
 // Description: Limit values
 // Subtypes: All
 // Error: 5601
