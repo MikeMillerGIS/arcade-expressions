@@ -14,6 +14,15 @@ var search_unit = 9002;
 // ************* End User Variables Section ************
 
 // *************       Functions            *************
+
+function sortCandidates(a, b) {
+    if (a['distance'] < b['distance'])
+        return -1;
+    if (a['distance'] > b['distance'])
+        return 1;
+    return 0;
+}
+
 function class_id_to_name(id) {
     if (id == 3 || id == '3') {
         return 'StructureJunction';
@@ -106,24 +115,27 @@ function build_sql(container_info, feat_global_id) {
     return sql_class
 }
 
-function generate_edit_payload(feature, sql_by_class, search_shape) {
+function generate_candidates(feature, sql_by_class, search_shape) {
+    var container_candidate = [];
+    var k = 0;
     for (var i = 0; i < Count(sql_by_class); i++) {
         var class_name = sql_by_class[i][0];
         var where = sql_by_class[i][1];
         var fs = get_features_switch_yard(class_name, ['GLOBALID'], false);
         var container_features = Filter(Intersects(fs, search_shape), where);
+
         var cont_feat_count = Count(container_features);
         if (cont_feat_count > 0) {
-            return [{
-                'className': class_name,
-                'updates': [{
-                    'globalID': First(container_features)['globalid'],
-                    'associationType': 'container'
-                }]
-            }];
+            for (var feat in container_features) {
+                container_candidate[k++] = {
+                    'class_name': class_name,
+                    'globalid': feat.globalid,
+                    'distance': Distance(feature, feat, 9002)
+                }
+            }
         }
     }
-    return null;
+    return container_candidate;
 }
 
 // Function to check if a bit is in an int value
@@ -169,10 +181,17 @@ if (IsEmpty(container_info)) {
 }
 var sql_by_class = build_sql(container_info, $feature.globalid);
 var search_shape = Buffer(Geometry($feature), search_distance, search_unit);
-var edit_payload = generate_edit_payload($feature, sql_by_class, search_shape)
-
-if (IsEmpty(edit_payload)) {
+var candidates = generate_candidates($feature, sql_by_class, search_shape)
+if (Count(candidates) == 0) {
     return assigned_to_field;
 }
+var sorted_candidates = Sort(candidates, sortCandidates);
+var edit_payload = [{
+    'className': sorted_candidates[0]['class_name'],
+    'updates': [{
+        'globalID': sorted_candidates[0]['globalid'],
+        'associationType': 'container'
+    }]
+}];
 
 return {"result": assigned_to_field, "edit": edit_payload};
