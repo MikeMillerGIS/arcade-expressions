@@ -1,5 +1,5 @@
-// Assigned To: Device
-// Name: Cathodic Protection Traceability for UPDM Devices
+// Assigned To: PipelineDevice
+// Name: Cathodic Protection Traceability for Pipeline Devices
 // Description: Set traceability flag for device assets
 // Subtypes: All
 // Field: cptraceability

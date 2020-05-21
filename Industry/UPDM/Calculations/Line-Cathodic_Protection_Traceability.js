@@ -1,5 +1,5 @@
-// Assigned To: Lines
-// Name: Cathodic Protection Traceability for UPDM Lines
+// Assigned To: PipelineLines
+// Name: Cathodic Protection Traceability for Pipeline Lines
 // Description: Set traceability flag for lines assets
 // Subtypes: All
 // Field: cptraceability

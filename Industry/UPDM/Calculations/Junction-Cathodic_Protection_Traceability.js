@@ -1,5 +1,5 @@
-// Assigned To: Junction
-// Name: Cathodic Protection Traceability for UPDM Junctions
+// Assigned To: PipelineJunction
+// Name: Cathodic Protection Traceability for Pipeline Junctions
 // Description: Set traceability flag for junction assets
 // Subtypes: All
 // Field: cptraceability
