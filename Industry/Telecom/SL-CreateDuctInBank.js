@@ -18,11 +18,10 @@ var duct_AG = 101;
 var duct_AT = 41;
 var duct_from_portid = 'fromportid';
 var duct_to_portid = 'toportid';
-var knock_out_sql = "AssetGroup = 110 and AssetType = 363";
 var wire_duct_sql = "ASSETGROUP = 101 and ASSETTYPE = 41";
+var knock_out_sql = "AssetGroup = 110 and AssetType = 363";
 var knock_out_duct_wide_field = 'ductcountwide';
 var knock_out_duct_high_field = 'ductcounthigh';
-var z_level = -10000;
 
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
@@ -39,11 +38,10 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
     }
     return feature_set;
 }
-
 // ************* End Section *****************
 
 
-// get "StructureJunction" feature that intersect with input point geo json. filter using knock_out_sql. returns Point type or null
+// get "StructureJunction" feature that intersects with input point geometry. filter using knock_out_sql. returns Point type or null
 function get_snapped_point(point_geo) {
     var fs = get_features_switch_yard(point_class, ["globalid", "assetgroup", "assettype", knock_out_duct_high_field, knock_out_duct_wide_field], false);
     var snapped_feats = Intersects(fs, Point(point_geo));
@@ -54,7 +52,7 @@ function get_snapped_point(point_geo) {
     return null;
 }
 
-// get all wire ducts connected to knockout
+// get all wire ducts snapped to knockout. returns FeatureSet or null
 function get_snapped_lines(point_geo){
     var fs = get_features_switch_yard(line_class, [duct_from_portid, duct_to_portid], true)
     var snapped_feats = Intersects(fs, point_geo);
@@ -64,7 +62,7 @@ function get_snapped_lines(point_geo){
     return Filter(snapped_feats, wire_duct_sql)
 }
 
-// get used ports at knockout by checking all snapped wire ducts.
+// get used ports at knockout by checking all snapped wire ducts. returns Array
 function get_used_ports(point_geo){
     var used_ports = [];
     var existing_snapped_ducts = get_snapped_lines(point_geo);
@@ -87,7 +85,7 @@ function get_used_ports(point_geo){
     return used_ports;
 }
 
-// Find the lowest number not in array
+// Find the lowest number not in array. Returns Number or null
 function next_avail(arr, num_ports) {
     if (Count(arr) == 0) {
         return 1;
@@ -150,7 +148,7 @@ var to_knockout_used_ports = get_used_ports(to_point);
 var line_attributes = {};
 var line_adds = [];
 
-// Copy the line and move the Z
+// Copy the line as text
 var line_json = Text(assigned_line_geo);
 
 for (var j = 0; j < duct_count; j++) {
