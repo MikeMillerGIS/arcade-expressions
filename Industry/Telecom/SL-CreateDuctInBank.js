@@ -19,6 +19,7 @@ var duct_AT = 41;
 var duct_from_portid = 'fromportid';
 var duct_to_portid = 'toportid';
 var knock_out_sql = "AssetGroup = 110 and AssetType = 363";
+var wire_duct_sql = "ASSETGROUP = 101 and ASSETTYPE = 41";
 var knock_out_duct_wide_field = 'ductcountwide';
 var knock_out_duct_high_field = 'ductcounthigh';
 var z_level = -10000;
@@ -31,6 +32,8 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
         feature_set = FeatureSetByName($datastore, "StructureJunction", fields, include_geometry);
     } else if (class_name == 'Associations') {
         feature_set = FeatureSetByName($datastore, 'UN_5_Associations', fields, false);
+    } else if (class_name == 'StructureLine') {
+        feature_set = FeatureSetByName($datastore, 'StructureLine', fields, include_geometry)
     } else {
         feature_set = FeatureSetByName($datastore, "StructureJunction", fields, include_geometry);
     }
@@ -39,42 +42,67 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
 
 // ************* End Section *****************
 
-// update all z-values and drop m-values
-function adjust_z(line_dict, z_value) {
-    var new_paths = [];
-    for (var i in line_dict['paths']) {
-        var current_path = line_dict['paths'][i];
-        var new_path = [];
-        for (var j in current_path) {
-            new_path[Count(new_path)] = [current_path[j][0], current_path[j][1], z_value];
-        }
-        new_paths[Count(new_paths)] = new_path
-    }
-    line_dict['paths'] = new_paths;
-    return line_dict
-}
 
 // get "StructureJunction" feature that intersect with input point geo json. filter using knock_out_sql. returns Point type or null
 function get_snapped_point(point_geo) {
-    // TODO: make sure switching to point_class didn't break anything
-    var fs = get_features_switch_yard("StructureJunction", ["globalid", "assetgroup", 'assettype', knock_out_duct_high_field, knock_out_duct_wide_field], false);
+    var fs = get_features_switch_yard(point_class, ["globalid", "assetgroup", "assettype", knock_out_duct_high_field, knock_out_duct_wide_field], false);
     var snapped_feats = Intersects(fs, Point(point_geo));
     var snapped_feat = First(Filter(snapped_feats, knock_out_sql));
     if (!IsEmpty(snapped_feat)) {
         return snapped_feat;
     }
     return null;
+}
 
+// get all wire ducts connected to knockout
+function get_snapped_lines(point_geo){
+    var fs = get_features_switch_yard(line_class, [duct_from_portid, duct_to_portid], true)
+    var snapped_feats = Intersects(fs, point_geo);
+    if (IsEmpty(snapped_feats)) {
+        return null;
+    }
+    return Filter(snapped_feats, wire_duct_sql)
+}
+
+// get used ports at knockout by checking all snapped wire ducts.
+function get_used_ports(point_geo){
+    var used_ports = [];
+    var existing_snapped_ducts = get_snapped_lines(point_geo);
+    if (existing_snapped_ducts == null) {
+        return used_ports;
+    }
+    for (var feat in existing_snapped_ducts) {
+        var duct_from_pt = Geometry(feat)["paths"][0][0];
+        var duct_to_pt = Geometry(feat)["paths"][0][-1];
+        if (Intersects(duct_from_pt, point_geo)) {
+            if (feat[duct_from_portid] != null) {
+                used_ports[Count(used_ports)] = feat[duct_from_portid];
+            }
+        } else if (Intersects(duct_to_pt, point_geo)) {
+            if (feat[duct_to_portid] != null) {
+                used_ports[Count(used_ports)] = feat[duct_to_portid];
+            }
+        }
+    }
+    return used_ports;
+}
+
+// Find the lowest number not in array
 function next_avail(arr, num_ports) {
+    if (Count(arr) == 0) {
+        return 1;
+    }
     if (Count(arr) >= num_ports) {
         return null;
     }
     var sorted_arr = sort(arr);
     for (var i in sorted_arr) {
         if (i+1 == sorted_arr[i]) {
+            if (i+1 == Count(sorted_arr)) {
+                return i+2
+            }
             continue;
         }
-        arr[Count(arr)] = i+1;
         return i+1
     }
 }
@@ -114,21 +142,36 @@ if (to_duct_count < duct_count) {
     return {'errorMessage': 'A duct bank has more ducts than the knock out at the end of the line can support'};
 }
 
+// handle port ids. used_ports variables are arrays containing integers
+var from_knockout_used_ports = get_used_ports(from_point);
+var to_knockout_used_ports = get_used_ports(to_point);
+
 // Create payload to add new lines
 var line_attributes = {};
 var line_adds = [];
-var junction_adds = [];
 
 // Copy the line and move the Z
 var line_json = Text(assigned_line_geo);
 
 for (var j = 0; j < duct_count; j++) {
     var content_shape = Dictionary(line_json);
-    content_shape = adjust_z(content_shape, z_level);
+    var fromportid_value = next_avail(from_knockout_used_ports, from_duct_count);
+    if (fromportid_value == null) {
+        return {'errorMessage': 'Not enough ports available in the knock out at the start of the line.'};
+    } else {
+        from_knockout_used_ports[Count(from_knockout_used_ports)] = fromportid_value
+    }
+    var toportid_value = next_avail(to_knockout_used_ports, to_duct_count);
+    if (fromportid_value == null) {
+        return {'errorMessage': 'Not enough ports available in the knock out as the end of the line.'};
+    } else {
+        to_knockout_used_ports[Count(to_knockout_used_ports)] = toportid_value
+    }
     line_attributes = {
         'AssetGroup': duct_AG,
         'AssetType': duct_AT,
-
+        'fromportid': fromportid_value,
+        'toportid': toportid_value
     };
     line_adds[Count(line_adds)] = {
         'attributes': line_attributes,
