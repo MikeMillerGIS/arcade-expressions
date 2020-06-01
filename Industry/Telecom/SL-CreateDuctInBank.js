@@ -16,8 +16,8 @@ var duct_count = $feature.maximumcapacity;
 // The Asset Group and Asset Type of the duct
 var duct_AG = 101;
 var duct_AT = 41;
-var duct_from_portid = 'fromportid';
-var duct_to_portid = 'toportid';
+var duct_from_port_num = 'fromportid';
+var duct_to_port_num = 'toportid';
 var wire_duct_sql = "ASSETGROUP = 101 and ASSETTYPE = 41";
 var knock_out_sql = "AssetGroup = 110 and AssetType = 363";
 var knock_out_duct_wide_field = 'ductcountwide';
@@ -53,8 +53,8 @@ function get_snapped_point(point_geo) {
 }
 
 // get all wire ducts snapped to knockout. returns FeatureSet or null
-function get_snapped_lines(point_geo){
-    var fs = get_features_switch_yard(line_class, [duct_from_portid, duct_to_portid], true)
+function get_snapped_lines(point_geo, return_geo){
+    var fs = get_features_switch_yard(line_class, [duct_from_port_num, duct_to_port_num], return_geo)
     var snapped_feats = Intersects(fs, point_geo);
     if (IsEmpty(snapped_feats)) {
         return null;
@@ -65,7 +65,7 @@ function get_snapped_lines(point_geo){
 // get used ports at knockout by checking all snapped wire ducts. returns Array
 function get_used_ports(point_geo){
     var used_ports = [];
-    var existing_snapped_ducts = get_snapped_lines(point_geo);
+    var existing_snapped_ducts = get_snapped_lines(point_geo, true);
     if (existing_snapped_ducts == null) {
         return used_ports;
     }
@@ -73,12 +73,12 @@ function get_used_ports(point_geo){
         var duct_from_pt = Geometry(feat)["paths"][0][0];
         var duct_to_pt = Geometry(feat)["paths"][0][-1];
         if (Intersects(duct_from_pt, point_geo)) {
-            if (feat[duct_from_portid] != null) {
-                used_ports[Count(used_ports)] = feat[duct_from_portid];
+            if (feat[duct_from_port_num] != null) {
+                used_ports[Count(used_ports)] = feat[duct_from_port_num];
             }
         } else if (Intersects(duct_to_pt, point_geo)) {
-            if (feat[duct_to_portid] != null) {
-                used_ports[Count(used_ports)] = feat[duct_to_portid];
+            if (feat[duct_to_port_num] != null) {
+                used_ports[Count(used_ports)] = feat[duct_to_port_num];
             }
         }
     }
@@ -105,7 +105,8 @@ function next_avail(arr, num_ports) {
     }
 }
 
-// Validation
+
+// ************* Validation *****************
 // Limit the rule to valid subtypes
 if (IndexOf(valid_asset_types, $feature.assettype) == -1) {
     return assigned_to_value;
@@ -126,9 +127,11 @@ var from_snapped_feat = get_snapped_point(from_point);
 if (IsEmpty(from_snapped_feat)) {
     return {'errorMessage': 'A duct bank must start at a knock out'};
 }
-// Get from duct count from from knockout attribute fields
+// Get count of available duct ports in a knockout. Check using height and width of knockout from attribute fields.
+// Account for ducts that may already be snapped to knockout.
 var from_duct_count = DefaultValue(from_snapped_feat[knock_out_duct_wide_field], 0) * DefaultValue(from_snapped_feat[knock_out_duct_high_field], 0);
-if (from_duct_count < duct_count) {
+var from_duct_occupied = Count(get_snapped_lines(from_point, false));
+if (from_duct_count - from_duct_occupied < duct_count) {
     return {'errorMessage': 'A duct bank has more ducts than the knock out at the start of the line can support'};
 }
 var to_snapped_feat = get_snapped_point(to_point);
@@ -136,10 +139,13 @@ if (IsEmpty(to_snapped_feat)) {
     return {'errorMessage': 'A duct bank must end at a knock out'};
 }
 var to_duct_count = DefaultValue(to_snapped_feat[knock_out_duct_wide_field], 0) * DefaultValue(to_snapped_feat[knock_out_duct_high_field], 0);
-if (to_duct_count < duct_count) {
+var to_duct_occupied = Count(get_snapped_lines(to_point, false));
+if (to_duct_count - to_duct_occupied < duct_count) {
     return {'errorMessage': 'A duct bank has more ducts than the knock out at the end of the line can support'};
 }
 
+
+// ************* Create Payload *****************
 // handle port ids. used_ports variables are arrays containing integers
 var from_knockout_used_ports = get_used_ports(from_point);
 var to_knockout_used_ports = get_used_ports(to_point);
