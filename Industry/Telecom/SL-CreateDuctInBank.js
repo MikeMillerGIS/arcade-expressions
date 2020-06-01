@@ -164,15 +164,15 @@ for (var j = 0; j < duct_count; j++) {
     if (assign_port_numbers) {
         fromport_value = next_avail(from_knockout_used_ports);
         from_knockout_used_ports[Count(from_knockout_used_ports)] = fromport_value;
-        toport_value = next_avail(to_knockout_used_ports, to_duct_count);
+        toport_value = next_avail(to_knockout_used_ports);
         to_knockout_used_ports[Count(to_knockout_used_ports)] = toport_value
     }
     line_attributes = {
         'AssetGroup': duct_AG,
         'AssetType': duct_AT,
-        duct_from_port_num: fromport_value,
-        duct_to_port_num: toport_value
     };
+    line_attributes[duct_from_port_num] = fromport_value;
+    line_attributes[duct_to_port_num] = toport_value;
     line_adds[Count(line_adds)] = {
         'attributes': line_attributes,
         'geometry': Polyline(content_shape),
