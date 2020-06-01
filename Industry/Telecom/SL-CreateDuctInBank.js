@@ -7,7 +7,10 @@
 
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
+
 var valid_asset_types = [81];
+// this will auto assign from/to port numbers to ducts
+var assign_port_numbers = true;
 
 var assigned_to_value = $feature.assetid;
 var line_class = "StructureLine";
@@ -85,13 +88,10 @@ function get_used_ports(point_geo){
     return used_ports;
 }
 
-// Find the lowest number not in array. Returns Number or null
-function next_avail(arr, num_ports) {
+// Find the lowest number not in array. Returns Number
+function next_avail(arr) {
     if (Count(arr) == 0) {
         return 1;
-    }
-    if (Count(arr) >= num_ports) {
-        return null;
     }
     var sorted_arr = sort(arr);
     for (var i in sorted_arr) {
@@ -132,7 +132,7 @@ if (IsEmpty(from_snapped_feat)) {
 var from_duct_count = DefaultValue(from_snapped_feat[knock_out_duct_wide_field], 0) * DefaultValue(from_snapped_feat[knock_out_duct_high_field], 0);
 var from_duct_occupied = Count(get_snapped_lines(from_point, false));
 if (from_duct_count - from_duct_occupied < duct_count) {
-    return {'errorMessage': 'A duct bank has more ducts than the knock out at the start of the line can support'};
+    return {'errorMessage': 'A duct bank has more ducts than the knock out at the start of the line can support.'};
 }
 var to_snapped_feat = get_snapped_point(to_point);
 if (IsEmpty(to_snapped_feat)) {
@@ -141,12 +141,12 @@ if (IsEmpty(to_snapped_feat)) {
 var to_duct_count = DefaultValue(to_snapped_feat[knock_out_duct_wide_field], 0) * DefaultValue(to_snapped_feat[knock_out_duct_high_field], 0);
 var to_duct_occupied = Count(get_snapped_lines(to_point, false));
 if (to_duct_count - to_duct_occupied < duct_count) {
-    return {'errorMessage': 'A duct bank has more ducts than the knock out at the end of the line can support'};
+    return {'errorMessage': 'A duct bank has more ducts than the knock out at the end of the line can support.'};
 }
 
 
 // ************* Create Payload *****************
-// handle port ids. used_ports variables are arrays containing integers
+// handle port numbers. used_ports variables are arrays containing integers
 var from_knockout_used_ports = get_used_ports(from_point);
 var to_knockout_used_ports = get_used_ports(to_point);
 
@@ -159,23 +159,19 @@ var line_json = Text(assigned_line_geo);
 
 for (var j = 0; j < duct_count; j++) {
     var content_shape = Dictionary(line_json);
-    var fromportid_value = next_avail(from_knockout_used_ports, from_duct_count);
-    if (fromportid_value == null) {
-        return {'errorMessage': 'Not enough ports available in the knock out at the start of the line.'};
-    } else {
-        from_knockout_used_ports[Count(from_knockout_used_ports)] = fromportid_value
-    }
-    var toportid_value = next_avail(to_knockout_used_ports, to_duct_count);
-    if (fromportid_value == null) {
-        return {'errorMessage': 'Not enough ports available in the knock out as the end of the line.'};
-    } else {
-        to_knockout_used_ports[Count(to_knockout_used_ports)] = toportid_value
+    var fromport_value = null;
+    var toport_value = null;
+    if (assign_port_numbers) {
+        fromport_value = next_avail(from_knockout_used_ports);
+        from_knockout_used_ports[Count(from_knockout_used_ports)] = fromport_value;
+        toport_value = next_avail(to_knockout_used_ports, to_duct_count);
+        to_knockout_used_ports[Count(to_knockout_used_ports)] = toport_value
     }
     line_attributes = {
         'AssetGroup': duct_AG,
         'AssetType': duct_AT,
-        'fromportid': fromportid_value,
-        'toportid': toportid_value
+        duct_from_port_num: fromport_value,
+        duct_to_port_num: toport_value
     };
     line_adds[Count(line_adds)] = {
         'attributes': line_attributes,
