@@ -8,7 +8,7 @@
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
-var distance_check = 0;
+var distance_check = 100;
 // Options for Unit of Measure: https://developers.arcgis.com/arcade/function-reference/geometry_functions/#units-reference
 var unit_of_measure = "feet";
 // Optionally limit rule to specific asset types. If not specified, asset type will be ignored.
@@ -55,14 +55,7 @@ function get_associated_container_id(feature) {
     //return a dict by class name with GlobalIDs of features, if empty, return empty dict
     return associated_id;
 }
-// Test whether dictionary is empty
-function is_empty_dict(dict) {
-    var test_array = [];
-    for (var k in dict) {
-        test_array[Count(test_array)] = k;
-    }
-    return Count(test_array) < 1
-}
+
 
 // *************       Main            ******************
 // Limit the rule to valid subtypes
@@ -74,7 +67,7 @@ if (Count(valid_asset_types) > 0) {
 
 // Get objectid of container feature
 var associated_id = get_associated_container_id($feature);
-if (is_empty_dict(associated_id)) {
+if (Text(associated_id) == "{}") {
     return true;
 }
 
