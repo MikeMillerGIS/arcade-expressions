@@ -37,10 +37,8 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
 function get_associated_container_ids(feature) {
     // feature(Feature): A feature object used to lookup associations
     var associated_ids = {};
-
     // Query to get all the content associations
     var associations = FeatureSetByAssociation(feature, "container");
-
     // If there is no content, exit the function
     if (Count(associations) == 0) {
         return associated_ids;
@@ -67,7 +65,7 @@ if (Count(valid_asset_types) > 0) {
 }
 
 // Get objectid of container feature
-var associated_id = get_associated_container_id($feature);
+var associated_id = get_associated_container_ids($feature);
 if (Text(associated_id) == "{}") {
     return true;
 }
@@ -78,7 +76,6 @@ for (var class_name in associated_id) {
     var feature_set = get_features_switch_yard(class_name, ['globalID'], true);
     var global_ids = associated_id[class_name];
     var features = Filter(feature_set, "globalid in @global_ids");
-    var feat = First(features);
     for (var feat in features) {
         // Distance measures shortest distance between two geometries, including edges
         if (Distance($feature, feat, unit_of_measure) > distance_check) {
