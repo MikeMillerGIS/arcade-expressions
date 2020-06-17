@@ -1,7 +1,7 @@
 // Rule Type: Constraint
 // Assigned To: N/A
 // Name: Check distance from container
-// Description: Validates that the $feature is within a specified distance from its container feature
+// Description: Validates that the feature is within a specified distance from its container feature
 // Subtypes: N/A
 // Trigger: Insert, Update
 // Execution: Exclude from application evaluation
@@ -20,9 +20,9 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
     var feature_set = null;
     if (class_name == "StructureJunction") {
         feature_set = FeatureSetByName($datastore, "StructureJunction", fields, include_geometry);
-    } else if (class_name == 'StructureLine') {
-        feature_set = FeatureSetByName($datastore, 'StructureLine', fields, include_geometry)
-    } else if (class_name == 'StructureBoundary') {
+    } else if (class_name == "StructureLine") {
+        feature_set = FeatureSetByName($datastore, "StructureLine", fields, include_geometry)
+    } else if (class_name == "StructureBoundary") {
         feature_set = FeatureSetByName($datastore, "StructureBoundary", fields, include_geometry);
     }
     return feature_set;
@@ -70,7 +70,7 @@ if (Text(associated_id) == "{}") {
     return true;
 }
 
-// Get geometry of container feature using globalid
+// Get global IDs of any container features outside allowable distance from feature
 var error_globalids = [];
 for (var class_name in associated_id) {
     var feature_set = get_features_switch_yard(class_name, ['globalID'], true);
@@ -85,7 +85,7 @@ for (var class_name in associated_id) {
 }
 
 if (Count(error_globalids) > 0) {
-    var mess = Concatenate("Feature is too far from container(s): ", Concatenate(error_globalids, ", "));
+    var mess = Concatenate("Feature is outside allowable distance from container(s): ", Concatenate(error_globalids, ", "));
     return {"errorMessage": mess}
 } else {
     return true;
