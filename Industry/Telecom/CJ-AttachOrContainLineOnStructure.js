@@ -1,19 +1,21 @@
 // Assigned To: CommunicationsJunction
+// Type: Calculation
 // Name: Attach or Contain junction in structure
-// Description: Rule generates connection points at a vertex when within a distance of a structure junction
+// Description: Generates connection points at a vertex when within a distance of a structure junction
 // Subtypes: Connection Point
-// Field: AssetID
+// Field: assetid
 // Trigger: Insert
+// Exclude From Client: True
 
-// ***************************************
+// *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 var assigned_to_field = $feature.assetid;
 var valid_asset_types = [1,2,3];
 var container_class = "StructureJunction";
-// ************* End Section *****************
 
+// ************* End User Variables Section *************
 
-if (count(valid_asset_types) > 0 && indexof(valid_asset_types, $feature.assettype) == -1) {
+if (Count(valid_asset_types) > 0 && IndexOf(valid_asset_types, $feature.assettype) == -1) {
     return assigned_to_field;
 }
 
