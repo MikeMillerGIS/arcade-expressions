@@ -1,8 +1,10 @@
-// Rule Type: Constraint
-// Assigned To: N/A
-// Name: Check distance from container
+// Assigned To: StructureLine
+// Type: Constraint
+// Name: Check Distance From Container
 // Description: Validates that the feature is within a specified distance from its container feature
-// Subtypes: N/A
+// Subtypes: All
+// Error Number: 5701
+// Error Message: Feature is outside allowable distance from container
 // Trigger: Insert, Update
 // Execution: Exclude from application evaluation
 
@@ -54,9 +56,8 @@ function get_associated_container_ids(feature) {
     //return a dict by class name with GlobalIDs of features, if empty, return empty dict
     return associated_ids;
 }
+// ************* End Functions Section ******************
 
-
-// *************       Main            ******************
 // Limit the rule to valid subtypes
 if (Count(valid_asset_types) > 0) {
     if (IndexOf(valid_asset_types, $feature.assettype) == -1) {
