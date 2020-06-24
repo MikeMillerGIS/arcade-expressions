@@ -6,7 +6,7 @@
 // Error Number: 5701
 // Error Message: Feature is outside allowable distance from container
 // Trigger: Insert, Update
-// Execution: Exclude from application evaluation
+// Exclude From Client: True
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
