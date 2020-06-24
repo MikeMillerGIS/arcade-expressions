@@ -10,7 +10,7 @@
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 var assigned_to_field = $feature.assetid;
-var valid_asset_types = [1,2,3];
+var valid_asset_types = [1, 2, 3];
 var container_class = "StructureJunction";
 
 // ************* End User Variables Section *************
