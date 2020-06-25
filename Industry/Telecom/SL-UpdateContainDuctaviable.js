@@ -1,21 +1,20 @@
 // Assigned To: StructureLine
+// Calculation
 // Name: Update ductavailable attribute when content changes
 // Description: Update ductavailable attribute when content changes
-// Subtypes: Wire Duct, Conduit
+// Subtypes: All
 // Field: ductavailable
-// Execute: Insert,Update
+// Execute: Insert, Update
 
-
-// ***************************************
+// *************       User Variables       *************
+// This section has the functions and variables that need to be adjusted based on your implementation
 var assigned_to_field = $feature.ductavailable;
-var assigned_to_class = "StructureLine"
-var duct_sql = "AssetGroup = 101 and AssetType = 41"
-var updates_payload = [];
-var edit_payload = [];
+var assigned_to_class = "StructureLine";
+var duct_sql = "AssetGroup = 101 and AssetType = 41";
+var valid_asset_groups = [101, 109];
 
 var association_status = $feature.ASSOCIATIONSTATUS;
 var orig_association_status = $originalFeature.ASSOCIATIONSTATUS;
-//var orig_association_status = $feature.ASSOCIATIONSTATUS;
 
 // Get Feature Switch yard, adjust the string literals to match your GDB feature class names
 function get_features_switch_yard(class_name, fields, include_geometry) {
@@ -28,6 +27,10 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
     }
     return feature_set;
 }
+
+// ************* End User Variables Section *************
+
+// *************       Functions            *************
 
 // Function to check if a bit is in an int value
 function has_bit(num, test_value) {
@@ -58,12 +61,18 @@ function has_bit(num, test_value) {
     }
 }
 
+// ************* End Functions Section *****************
+
+// Limit the rule to valid subtypes
+if (Count(valid_asset_groups) > 0 && IndexOf(valid_asset_groups, assetgroup_value) == -1) {
+    return assigned_to_field;
+}
 //Association Status did not change, return original value
 if (association_status == orig_association_status) {
     return assigned_to_field;
 }
 
-// The feautre was a container and still is a container, return the original value
+// The feature was a container and still is a container, return the original value
 if (has_bit(orig_association_status, 1) && has_bit(association_status, 1))
 {
     return assigned_to_field;
@@ -71,14 +80,14 @@ if (has_bit(orig_association_status, 1) && has_bit(association_status, 1))
 // The feature was a container, but is not now
 if (has_bit(orig_association_status, 1) && has_bit(association_status, 1) == false)
 {
-    // Duct Avaible is now true
+    // Duct Available is now true
     assigned_to_field = 1;
 }
 
 // The object was not a contain and is now
 if (has_bit(association_status, 1) && has_bit(orig_association_status, 1) == false)
 {
-    // Duct Availble is now false
+    // Duct Available is now false
     assigned_to_field = 0;
 }
 
