@@ -6,7 +6,6 @@
 // Field: assetid
 // Trigger: Insert
 
-{FieldA,Fi}
 // ***************************************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
