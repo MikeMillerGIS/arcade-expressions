@@ -9,7 +9,7 @@
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
-var assigned_to_field = $feature.fiberavialable;
+var assigned_to_field = $feature.fiberreserved;
 var assetgroup_value = $feature.assetgroup;
 var assettype_value = $feature.assettype;
 var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
