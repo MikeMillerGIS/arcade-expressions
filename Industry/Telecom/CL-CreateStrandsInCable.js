@@ -51,7 +51,7 @@ var cable_snap_types = {
 var strand_snap_types = {
     'splitter': 'AssetGroup = 13 AND (AssetType = 165 OR AssetType = 166)', // Splitter: Fiber Out
     'splice': 'AssetGroup = ' + new_splice_feature_AG + ' AND AssetType = ' + new_splice_feature_AT, // Port: Splice
-    'pass-through': 'AssetGroup = 8 AND AssetType = 144' // Port: Strand Termination
+    'pass-through': 'AssetGroup = 8 AND AssetType = 143' // Port: Strand Termination
 };
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
