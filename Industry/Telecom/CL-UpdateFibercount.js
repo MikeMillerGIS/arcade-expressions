@@ -1,32 +1,21 @@
 // Assigned To: CommunicationsLine
-// Name: Update strand summary information in cable
-// Description: Rule generates strands inside the cable based on the content count field
+// Type: Calculation
+// Name: Populate fibercount
+// Description: Calculates number of Fiber features contained within feature
 // Subtypes: All
 // Field: fibercount
 // Execute: Update
+// Exclude From Client: True
 
-// **************************************
+// *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 var assigned_to_field = $feature.fibercount;
-var valid_asset_groups = [1,3,4,5,6,7,9 ];
-var valid_asset_types = [3];
-var sqlquery = 'assettype = 163';
-if (count(valid_asset_groups) > 0 && indexof(valid_asset_groups, $feature.assetgroup) == -1) {
-    return assigned_to_field;
-}
-if (count(valid_asset_types) > 0 && indexof(valid_asset_types, $feature.assettype) == -1) {
-    return assigned_to_field;
-}
-// Instead of assigning the rule at the subtype, it is assigned to all subtypes and returns if not valid
-
-// Limit the rule to valid subtypes
+var assetgroup_value = $feature.assetgroup;
+var assettype_value = $feature.assettype;
 var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
-if (indexof(valid_asset_groups, $feature.assetgroup) == -1) {
-    return assigned_to_field;
-}
-
-var valid_asset_types = [1,2,3];
+var valid_asset_types = [1, 2, 3];
 var line_class = "CommunicationsLine";
+var fiber_sql = 'assetgroup = 8 AND assettype = 163';
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
@@ -45,46 +34,20 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
     return feature_set;
 }
 
+// ************* End User Variables Section *************
 
-// ************* End Section *****************
-function pop_empty(dict) {
-    var new_dict = {};
-    for (var k in dict) {
-        if (IsNan(dict[k])) {
-            continue;
-        }
-        if (IsEmpty(dict[k])) {
-            continue;
-        }
-        new_dict[k] = dict[k];
-    }
-    return new_dict
-}
-
-function keys_to_list(dict) {
-    if (IsEmpty(dict)) {
-        return []
-    }
-    var keys = []
-    for (var k in dict) {
-        var res = number(k)
-        if (!IsNan(res)) {
-            keys[count(keys)] = res
-        }
-    }
-    return sort(keys)
-
-}
+// *************       Functions            *************
 
 function get_associated_feature_ids(feature, association_type) {
     // Query to get all the content associations
     var associations = FeatureSetByAssociation(feature, association_type);
     // If there is no content, exit the function
-    if (count(associations) == 0) {
+    if (Count(associations) == 0) {
         return null;
     }
     // loop over all associated records to get a list of the associated classes and the IDs of the features
     var associated_ids = {};
+    associated_ids[line_class] = [];
     for (var row in associations) {
         if (HasKey(associated_ids, row.className) == false) {
             associated_ids[row.className] = [];
@@ -125,25 +88,25 @@ function has_bit(num, test_value) {
     }
 }
 
-function get_features_counts_by_query(associated_ids,sql){
-    // dict to store the features by class name
-    var associated_features = {};
+function get_features_counts_by_query(associated_ids, sql){
     // loop over classes
-    var feature_set = FeatureSetByName($datastore, "CommunicationsLine", ['*'], false);
-    var global_ids = associated_ids["CommunicationsLine"];
-    var fcnt = count(Filter(feature_set, sql + " AND globalid IN @global_ids"));
+    var feature_set = get_features_switch_yard(line_class, ["globalid"], false);
+    var global_ids = associated_ids[line_class];
+    var fcnt = Count(Filter(feature_set, sql + " AND globalid IN @global_ids"));
     // Return the features
     return fcnt;
 }
-// Validation
 
-// Limit the rule to valid subtypes
-if (indexof(valid_asset_types, $feature.assettype) == -1) {
+// ************* End Functions Section *****************
+
+// Limit the rule to valid subtypes and asset types
+if (Count(valid_asset_groups) > 0 && IndexOf(valid_asset_groups, assetgroup_value) == -1) {
+    return assigned_to_field;
+}
+if (Count(valid_asset_types) > 0 && IndexOf(valid_asset_types, assettype_value) == -1) {
     return assigned_to_field;
 }
 
-// Only features with an association status of container(bit 1)
-// need to be evaluated
 var association_status = $feature.ASSOCIATIONSTATUS;
 // Only features with an association status of container(bit 1)
 // need to be evaluated
@@ -153,7 +116,7 @@ if (IsEmpty(association_status) || has_bit(association_status,1) == false){
 
 var associated_ids = get_associated_feature_ids($feature, "content");
 if (IsEmpty(associated_ids)){
-    return "No Associations";
+    return 0;
 }
 
-return {"result": get_features_counts_by_query(associated_ids,sqlquery)}
+return {"result": get_features_counts_by_query(associated_ids,fiber_sql)};
