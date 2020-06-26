@@ -37,7 +37,7 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
 // *************       Functions            *************
 
 // Function to get UN associated container feature id
-function get_associated_container_ids(feature) {
+function get_container_feature_ids(feature) {
     // feature(Feature): A feature object used to lookup associations
     var associated_ids = {};
     // Query to get all the content associations
@@ -67,7 +67,7 @@ if (Count(valid_asset_types) > 0) {
 }
 
 // Get objectid of container feature
-var associated_id = get_associated_container_ids($feature);
+var associated_id = get_container_feature_ids($feature);
 if (Text(associated_id) == "{}") {
     return true;
 }

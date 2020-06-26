@@ -39,9 +39,9 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
 
 // *************       Functions            *************
 
-function get_associated_feature_ids(feature, association_type) {
+function get_content_feature_ids(feature) {
     // Query to get all the content associations
-    var associations = FeatureSetByAssociation(feature, association_type);
+    var associations = FeatureSetByAssociation(feature, "content");
     // If there is no content, exit the function
     if (Count(associations) == 0) {
         return null;
@@ -115,7 +115,7 @@ if (IsEmpty(association_status) || has_bit(association_status,1) == false){
     return assigned_to_field;
 }
 
-var associated_ids = get_associated_feature_ids($feature, "content");
+var associated_ids = get_content_feature_ids($feature);
 if (IsEmpty(associated_ids)){
     return 0;
 }
