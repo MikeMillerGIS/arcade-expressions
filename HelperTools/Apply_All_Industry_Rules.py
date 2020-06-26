@@ -4,9 +4,11 @@ import pathlib
 import pandas as pd
 import re
 
-workspace = r"C:\\temp\\GasPipelineEnterpriseDataManagement\\Gas and Pipeline Enterprise Data Management\\Databases\\UPDM_UtilityNetwork.gdb"
+workspace = r"C:\tmp\AR\add_AR_script\SuggestedModel1.gdb"
+industry_folder = pathlib.Path(r"C:\Git\arcade-expressions\Industry\Telecom")
 # workspace = r"C:\temp\GasPipelineEnterpriseDataManagement\Gas and Pipeline Enterprise Data Management\Databases\UPDM_AssetPackage.gdb"
 # workspace = r"C:\temp\UPDM2019\UN\UPDM_UtilityNetwork.gdb"
+# industry_folder = pathlib.Path(r"C:\_MyFiles\github\arcade-expressions\Industry\UPDM")
 is_un = True
 
 pat = re.compile("(?:'sequence': )'(.*?)'")
@@ -97,7 +99,7 @@ if workspace.lower().endswith('.gdb') and arcpy.Exists(os.path.join(workspace, '
     seq_df = cursor_to_df(arcpy.da.SearchCursor(os.path.join(workspace, 'B_DatabaseSequence'), ['*']))
     is_un = False
 
-industry_folder = pathlib.Path(r"C:\_MyFiles\github\arcade-expressions\Industry\UPDM")
+
 fcs = set()
 all_args = []
 all_seq = []
@@ -116,6 +118,8 @@ comments_to_parameter = {
     'Is Editable': "is_editable"
 }
 for path in industry_folder.rglob('*.js'):
+    if path.parent.name.lower() == 'notused':
+        continue
     f = open(str(path), "r")
 
     kwargs = {}
@@ -183,7 +187,8 @@ if is_un:
         att_rules = arcpy.Describe(os.path.join(workspace, fc)).attributeRules
         ar_names = [ar.name for ar in att_rules]
         if ar_names:
-            print(f"Deleting all rules on {fc}")
+            print(f"Deleting all rules on {fc}:")
+            print(f"\t\t{str(ar_names)}")
             arcpy.management.DeleteAttributeRule(fc, ar_names, '')
 
     for kwargs in all_args:
