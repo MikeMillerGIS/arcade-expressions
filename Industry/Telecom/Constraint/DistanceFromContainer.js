@@ -7,6 +7,7 @@
 // Error Message: Feature is outside allowable distance from container
 // Trigger: Insert, Update
 // Exclude From Client: True
+// Disable: False
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation

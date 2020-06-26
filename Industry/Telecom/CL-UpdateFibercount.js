@@ -6,6 +6,7 @@
 // Field: fibercount
 // Trigger: Update
 // Exclude From Client: True
+// Disable: False
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
