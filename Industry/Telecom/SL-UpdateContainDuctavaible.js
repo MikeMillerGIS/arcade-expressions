@@ -5,6 +5,8 @@
 // Subtypes: Wire Duct
 // Field: ductavailable
 // Trigger: Insert, Update
+// Exclude From Client: True
+// Disable: True
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
@@ -86,7 +88,6 @@ if (has_bit(association_status, 1) && has_bit(orig_association_status, 1) == fal
     assigned_to_field = 0;
 }
 
-
 container_row = First(FeatureSetByAssociation($feature, 'container'));
 if (!IsEmpty(container_row)) {
     var cont_fs = get_features_switch_yard(container_row['className'], ['globalid'], false);
@@ -99,7 +100,7 @@ if (!IsEmpty(container_row)) {
             if (row.className == assigned_to_class) {
                 // Might need to ignore the current feature
                 if ($feature.globalid != row.globalId) {
-                    associated_ids[count(associated_ids)] = row.globalId;
+                    associated_ids[Count(associated_ids)] = row.globalId;
                 }
             }
         }
