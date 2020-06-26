@@ -154,7 +154,7 @@ for path in industry_folder.rglob('*.js'):
                 kwargs['triggering_insert'] = 1 if 'INSERT' in trigger_events else 0
                 kwargs['triggering_delete'] = 1 if 'DELETE' in trigger_events else 0
                 kwargs['triggering_update'] = 1 if 'UPDATE' in trigger_events else 0
-        elif param in ('Description', 'Name', 'Error Number', 'Error Message', 'Field'):
+        elif param in ('Description', 'Name', 'Error Number', 'Error Message', 'Field', 'Exclude From Client'):
             kwargs[comments_to_parameter[param]] = details
     f.seek(0, 0)
     script_expression = f.read()
