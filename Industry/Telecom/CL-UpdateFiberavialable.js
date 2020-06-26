@@ -4,7 +4,7 @@
 // Description: Calculates number of Fiber features contained within feature with status of available
 // Subtypes: All
 // Field: fiberavialable
-// Execute: Update
+// Trigger: Update
 // Exclude From Client: True
 
 // *************       User Variables       *************

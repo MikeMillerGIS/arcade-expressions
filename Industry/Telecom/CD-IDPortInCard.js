@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsAssembly
 // Type: Calculation
-// Name: Calculate Assembly Equipment ID
-// Description: Calculate Assembly Equipment ID by parent container
+// Name: Calculate Port ID
+// Description: Calculate Port ID by parent container
 // Subtypes: Port
 // Field: AssetID
 // Trigger: Insert, Update

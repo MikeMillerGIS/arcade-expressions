@@ -4,7 +4,7 @@
 // Description: Calculates number of Fiber features contained within feature with status of in use
 // Subtypes: All
 // Field: fiberinuse
-// Execute: Update
+// Trigger: Update
 // Exclude From Client: True
 
 // *************       User Variables       *************

@@ -1,5 +1,5 @@
 // Assigned To: StructureJunction
-// Type: Calculate
+// Type: Calculation
 // Name: Contain Knock out port in knockout
 // Description: Contains a knock out port in a knockout using the ContainerGuid field
 // Subtypes: Wire Vault

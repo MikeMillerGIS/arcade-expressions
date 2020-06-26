@@ -4,7 +4,7 @@
 // Description: Calculates number of Fiber features contained within feature with status of not usable
 // Subtypes: All
 // Field: fiberunusable
-// Execute: Update
+// Trigger: Update
 // Exclude From Client: True
 
 // *************       User Variables       *************

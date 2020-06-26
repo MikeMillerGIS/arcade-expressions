@@ -4,7 +4,7 @@
 // Description: Calculates number of Fiber features contained within feature
 // Subtypes: All
 // Field: fibercount
-// Execute: Update
+// Trigger: Update
 // Exclude From Client: True
 
 // *************       User Variables       *************
@@ -13,7 +13,7 @@ var assigned_to_field = $feature.fibercount;
 var assetgroup_value = $feature.assetgroup;
 var assettype_value = $feature.assettype;
 var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
-var valid_asset_types = [1, 2, 3];
+var valid_asset_types = [3];
 var line_class = "CommunicationsLine";
 var fiber_sql = 'assetgroup = 8 AND assettype = 163';
 

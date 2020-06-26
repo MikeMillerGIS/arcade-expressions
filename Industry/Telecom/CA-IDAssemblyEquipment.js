@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsAssembly
 // Type: Calculation
 // Name: Calculate Assembly Equipment ID
-// Description:  Calculate Assembly Equipment ID by parent container
+// Description: Calculate Assembly Equipment ID by parent container
 // Subtypes: Assembly Equipment
 // Field: AssetID
 // Trigger: Insert, Update

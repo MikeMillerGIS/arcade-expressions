@@ -1,17 +1,16 @@
 // Assigned To: StructureLine
-// Calculation
+// Type: Calculation
 // Name: Update ductavailable attribute when content changes
 // Description: Update ductavailable attribute when content changes
-// Subtypes: All
+// Subtypes: Wire Duct
 // Field: ductavailable
-// Execute: Insert, Update
+// Trigger: Insert, Update
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 var assigned_to_field = $feature.ductavailable;
 var assigned_to_class = "StructureLine";
 var duct_sql = "AssetGroup = 101 and AssetType = 41";
-var valid_asset_groups = [101, 109];
 
 var association_status = $feature.ASSOCIATIONSTATUS;
 var orig_association_status = $originalFeature.ASSOCIATIONSTATUS;
@@ -63,10 +62,6 @@ function has_bit(num, test_value) {
 
 // ************* End Functions Section *****************
 
-// Limit the rule to valid subtypes
-if (Count(valid_asset_groups) > 0 && IndexOf(valid_asset_groups, assetgroup_value) == -1) {
-    return assigned_to_field;
-}
 //Association Status did not change, return original value
 if (association_status == orig_association_status) {
     return assigned_to_field;
