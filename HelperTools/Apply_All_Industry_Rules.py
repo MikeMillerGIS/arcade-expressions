@@ -156,6 +156,7 @@ for path in industry_folder.rglob('*.js'):
                 kwargs['triggering_delete'] = 1 if 'DELETE' in trigger_events else 0
                 kwargs['triggering_update'] = 1 if 'UPDATE' in trigger_events else 0
         elif param == 'Exclude From Client':
+            details = details.lower() == 'true'
             if is_un:
                 kwargs[comments_to_parameter[param]] = details
             else:
