@@ -16,7 +16,7 @@ var assettype_value = $feature.assettype;
 var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
 var valid_asset_types = [3];
 var line_class = "CommunicationsLine";
-var fiber_avialable_sql = 'assettype = 163 and strandstatus = 1';
+var fiber_available_sql = 'assettype = 163 and strandstatus = 1';
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
