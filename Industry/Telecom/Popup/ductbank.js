@@ -111,6 +111,7 @@ var popup = `<!DOCTYPE html>
          y_val = y_val + from_to_spacing;
          draw_layout(width_to, height_to, false);
          elem.height = y_val + from_to_spacing;
+         elem.width = largest_x + 25;
          // reset variables
          y_val = 25;
          largest_x = 0;
