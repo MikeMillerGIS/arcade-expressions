@@ -76,8 +76,15 @@ var popup = `<!DOCTYPE html>
                              ctx.font = '12px arial';
                              var txt = duct_info[ko_idx.toString()]['display']
                              var txt_width = ctx.measureText(txt).width;
-                             ctx.fillText(txt, x_val - (txt_width/2), y_val + circle_radius *2 + 5 );
-                             circles.push({
+                             var lineheight = 15;
+                             var lines = txt.split('_split_');
+                             var x = x_val - (txt_width/2); 
+                             var y = y_val + circle_radius *2 + 5;
+                             for (var j = 0; j<lines.length; j++){
+                                ctx.fillText(lines[j], x, y + (j*lineheight) );
+                             }
+                              //ctx.fillText(txt, x_val - (txt_width/2), y_val + circle_radius *2 + 5 );
+                              circles.push({
                                  x: x_val,
                                  y: y_val,
                                  r: circle_radius+ 5,
@@ -211,9 +218,27 @@ var struct_line_fs = FeatureSetByName($datastore, 'StructureLine', ["OBJECTID","
 var duct_features = Filter(struct_line_fs, "globalid IN @global_ids");
 var from_port_duct_details = {};
 var to_port_duct_details = {};
+var Comm_line_fs = FeatureSetByName($datastore, 'CommunicationsLine', ["OBJECTID","AssetID", "AssetGroup", "AssetType"], true);
+
 for (var duct_feat in duct_features){
-    var fill = iif(has_bit(duct_feat['ASSOCIATIONSTATUS'], 1),2,1);
     var display = "" + duct_feat['OBJECTID'] + "-" + duct_feat['DUCTDIAMETER'] + 'in';
+    var fill = 1;
+    if(has_bit(duct_feat['ASSOCIATIONSTATUS'], 1)){
+        var cable_content_rows = FeatureSetByAssociation(duct_feat, 'content');
+        var global_ids = [];
+        var i = 0;
+        for (var content_row in cable_content_rows) {
+            if (content_row.globalid == duct_feat.globalid) {
+                continue;
+            }
+            global_ids[i++] = content_row.globalid;
+        }
+        var cable_features = Filter(Comm_line_fs, "globalid IN @global_ids");
+        for (var cable_feature in cable_features){
+            display = display + '_split_Cable - ' + cable_feature.objectid;
+        }
+        fill = 2;
+    }
     from_port_duct_details[Text(duct_feat['FROMPORT'])] = {'fill': fill, 'display': display}
     to_port_duct_details[Text(duct_feat['TOPORT'])] = {'fill': fill, 'display': display}
 }
