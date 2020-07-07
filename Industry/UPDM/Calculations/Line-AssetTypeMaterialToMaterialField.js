@@ -6,7 +6,7 @@
 // Field: material
 // Trigger: Insert, Update
 
-// ***************************************
+// *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
 // Limit the rule to valid asset groups and asset types
@@ -23,7 +23,7 @@ var at_to_mat = {
     '6': 'S',
     '4': 'X'
 };
-// ************* End Section *****************
+// ************* End User Variables Section *************
 
 if (HasKey(at_to_mat, Text(asset_type)) == false) {
     return assigned_to_field;

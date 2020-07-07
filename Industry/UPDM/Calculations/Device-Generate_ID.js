@@ -7,13 +7,21 @@
 // Trigger: Insert
 // Exclude From Client: True
 
-// ***************************************
+// *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
+// Field in the data model used to store and manage the ID
+// ** Implementation Note: This value does not need to change if using the industry data model
 var assigned_to_field = $feature.assetid;
+
+// Asset group/Subtype field used to define different IDs per the class
+// ** Implementation Note: This value does not need to change if using the industry data model
+var id_selector_value = $feature.assetgroup;
+
 // Define the leading text, the trailing text and the delimiter for the ID, this function requires the keyed passed in
 // NextSequenceValue requires a string literal for copy and paste, although it supports a variable, it is recommended
 // to not use one
+// ** Implementation Note: Adjust the prefix and join_char for each subtype.  The selector_value_txt is the subtype of the layer
 function get_id(selector_value) {
     var id_format = {}
     var seq_val = null;
@@ -150,9 +158,9 @@ function get_id(selector_value) {
     var id_parts = remove_empty([id_format['prefix'], seq_val, id_format['suffix']])
     return Concatenate(id_parts, id_format['join_char'])
 }
+// ************* End User Variables Section *************
 
-// ************* End Section ****************
-// Functions
+// *************       Functions            *************
 function remove_empty(arr) {
     var new_arr = [];
     var j = 0;
@@ -164,12 +172,12 @@ function remove_empty(arr) {
     return new_arr;
 }
 
-// End Functions
+// ************* End Functions Section *****************
 
 if (IsEmpty(assigned_to_field) == false && assigned_to_field != '') {
     return assigned_to_field
 }
-var new_id = get_id($feature.assetgroup)
+var new_id = get_id(id_selector_value)
 if (IsEmpty(new_id)) {
     return assigned_to_field;
 }

@@ -6,7 +6,7 @@
 // Trigger: Insert,Update,Delete
 
 
-// ***************************************
+// *************       User Variables       *************
 var assigned_to_field = $feature.ductavailable;
 var assigned_to_class = "StructureLine"
 var duct_sql = "AssetGroup = 101 and AssetType = 41"

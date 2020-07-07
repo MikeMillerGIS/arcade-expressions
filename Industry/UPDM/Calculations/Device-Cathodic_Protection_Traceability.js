@@ -6,7 +6,7 @@
 // Field: cptraceability
 // Trigger: Insert, Update
 
-// ***************************************
+// *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
 // Limit the rule to valid asset groups and asset types
@@ -25,7 +25,7 @@ var not_traceable = 2; // Also used for Insulated
 var conductive_materials = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'S', 'R', 'Q', 'P', 'O', 'N', 'M'];
 var non_conductive_materials = [];
 
-// ************* End Section *****************
+// ************* End User Variables Section *************
 
 if (IsEmpty(assigned_to_field) == false && assigned_to_field != '') {
     return assigned_to_field
