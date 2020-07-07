@@ -6,6 +6,18 @@
 // Field: assetid
 // Trigger: Insert
 
+// Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
+//    - None
+
+// Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
+//    - Assembly-Generate_ID
+//    - Device-Generate_ID
+//    - Junction-Generate_ID
+//    - Line-Generate_ID
+//    - StructureBoundary-Generate_ID
+//    - StructureJunction-Generate_ID
+//    - StructureLine-Generate_ID
+
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 

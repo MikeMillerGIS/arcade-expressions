@@ -6,13 +6,25 @@
 // Field: symbolrotation
 // Trigger: Insert, Update
 
+// Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
+//    - None
+
+// Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
+//    - Device-Symbol_Rotation
+//    - Junction-Symbol_Rotation
+
 // *************       User Variables       *************
 
+// Field in the data model used to store and manage the rotation of the feature
+// ** Implementation Note: This value does not need to change if using the industry data model
+var assigned_to_field = $feature.symbolrotation;
+
 // Set to true if the rotation setting is set to geographic in the layer properties
+// ** Implementation Note: This value does not need to change if using the industry maps
 var geographic_rotation = false;
+// ** Implementation Note: This value does not need to change if using the industry maps
 // Set the counter clockwise spin angle used for the symbol in the symbology options
 var symbol_flip_angle = 0
-var assigned_to_field = $feature.symbolrotation;
 
 // ************* End User Variables Section ************
 

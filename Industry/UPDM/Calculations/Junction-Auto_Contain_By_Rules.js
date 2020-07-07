@@ -6,14 +6,44 @@
 // Field: assetid
 // Trigger: Insert, Update
 // Exclude From Client: True
+// Disable: False
+
+// Implementation Note: This rule is disabled by default as it auto performs containment of features when editing.  If you desire these functions, enable this rule and adjust the settings below.
+
+// Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
+//    - None
+
+// Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
+//    - Device-Auto_Contain_By_Rules
+//    - Junction-Auto_Contain_By_Rules
+//    - Line-Auto_Contain_By_Rules
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
+
+// The field the rule is assigned to
+// ** Implementation Note: The field this rule is assigned to does not matter as it does not affect the assigned to field
 var assigned_to_field = $feature.assetid;
+
+// The association status field, this field is maintained by the utility network
+// ** Implementation Note: Do not change this value, it is in this section in case there is a schema change to the utility network in the future.
 var association_status = $feature.associationstatus;
-var search_distance = 40; //DefaultValue($feature.searchdistance, 75);
+
+// The distance to search for a container
+// ** Implementation Note: Adjust this value based on the distance to auto contain, the comment after the value is an example how to use a
+//    field to defined the distance, this field does not exist in the data model, but could be added to provide a data specific distance.
+var search_distance = 40; //DefaultValue($feature.searchdistance, 40);
+
+// The unit of the distance value in search_distance.
+// ** Implementation Note: Set the distance to search, for unit codes - https://desktop.arcgis.com/en/arcobjects/latest/net/webframe.htm#esriSRUnitType.htm
 var search_unit = 9002;
 
+// The utility network class ID for each layer.
+// ** Implementation Note: Adjust these values to match your geodatabase.  The values defined below are for a Version 3
+//    utility network with only the schema provide(no additional domain networks)
+//    These values will change with a version 4 utility network or if you applied more than one domain to the same utility network.
+//    To review these values, open the attribute domains in the database with the utility network and search for FeatureSourceID.  This domain
+//    will list the class id by un domain alias, not class name, so you will have to related the un attribute domain to the gdb class name to match its ID
 function class_id_to_name(id) {
     if (id == 3 || id == "3") {
         return "StructureJunction";
@@ -34,6 +64,11 @@ function class_id_to_name(id) {
     }
 }
 
+// The FeatureSetByName function requires a string literal for the class name.  These are just the class name and should not be fully qualified
+// ** Implementation Note: Adjust these to match the name of the domain.  The domain name will only change if you adjusted this in the
+//    A_DomainNetwork table and renamed the domain classes in the asset package prior to applying it.
+//    If applying to Enterprise, you will need to set the is_enteprise flag to true to load the rules table correctly
+var is_enterprise = false;
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, ".")[-1];
     var feature_set = null;
@@ -51,13 +86,18 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
         feature_set = FeatureSetByName($datastore, "StructureLine", fields, include_geometry);
     } else if (class_name == "StructureBoundary") {
         feature_set = FeatureSetByName($datastore, "StructureBoundary", fields, include_geometry);
-    } else if (class_name == "Rules") {
+    } else if (class_name == "Rules" && is_enterprise == false) {
         feature_set = FeatureSetByName($datastore, "UN_5_Rules", fields, false);
+    } else if (class_name == "Rules" && is_enterprise == true) {
+        feature_set = FeatureSetByName($datastore, "Rules", fields, false);
     } else {
         feature_set = FeatureSetByName($datastore, "StructureBoundary", fields, include_geometry);
     }
     return feature_set;
 }
+
+// A function to determine if the edit is triggered by UpdateSubnetwork.  IF a filegeodatbase, this action triggers an edit event, it enterprise, triggering the event is optional
+// ** Implementation Note: If using the industry model with all tiers, not change is required.  If a teir was removed, remove the match if block.
 function is_edit_from_subnetwork() {
     if ($feature.systemsubnetworkname != $originalfeature.systemsubnetworkname) {
         return true;
@@ -73,6 +113,7 @@ function is_edit_from_subnetwork() {
     }
     return false;
 }
+
 // ************* End User Variables Section ************
 
 // *************       Functions            *************

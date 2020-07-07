@@ -6,24 +6,53 @@
 // Field: cptraceability
 // Trigger: Insert, Update
 
+// Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
+//    - None
+
+// Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
+//    - Device-Cathodic_Protection_Traceability
+//    - Junction-Cathodic_Protection_Traceability
+//    - Line-Cathodic_Protection_Traceability
+
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
-// Limit the rule to valid asset groups and asset types
-
+// Field in the data model used to store and manage the CP information
+// ** Implementation Note: This value does not need to change if using the industry data model
 var assigned_to_field = $feature.cptraceability;
 var cp_override = $feature.cpoverride;
 var cp_bondedinsulated = $feature.bondedinsulated;
+
+// Field in the data model used to store and manage the material details
+// ** Implementation Note: This value does not need to change if using the industry data model
 var cp_material = $feature.material;
 
+// The list of material types that are conductive from the material field and the ASTM_Pipe_Material domain
+// ** Implementation Note: These do not need to be adjusted unless the value of the material attribute domains were changed.
+var conductive_materials = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'S', 'R', 'Q', 'P', 'O', 'N', 'M'];
+
+// The list of material types that are not conductive from the material field and the ASTM_Pipe_Material domain
+// ** Implementation Note: These do not need to be adjusted unless the value of the material attribute domains were changed.
+var non_conductive_materials = ['A','B','C','D','E','F','G','H','J','K','L','T','U','V'];
+
+// Limit the rule to valid asset groups/subtypes
+// ** Implementation Note: Instead of recreating this rule for each subtype, this rules uses a list of subtypes and exits if not valid
+//    If you have added Asset Groups, they will need to be added to this list.
 var valid_asset_groups = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 18, 19, 20, 50, 51, 52];
+
+// List of asset groups that are always included in a CP trace.
+// ** Implementation Note: If you have extended the CP model for additional asset groups, those asset groups should be added here
 var asset_groups_always_traceability = [50, 51, 52];
+
+// List of asset groups that are always not include in a CP trace and are CP barriers.
+// ** Implementation Note: If you have extended the pipe model for additional asset groups that never conduct cp current, those asset groups should be added here
 var asset_groups_never_traceability = [];
+
+// Values to determine traceability
+// ** Implementation Note: These do not need to be adjusted unless the value of the CP_Traceability attribute domain were changed.
 var traceable = 1; // Also used for Bonded
 var not_traceable = 2; // Also used for Insulated
-// The material field and list of material types and that are conductive
-var conductive_materials = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'S', 'R', 'Q', 'P', 'O', 'N', 'M'];
-var non_conductive_materials = [];
+
 
 // ************* End User Variables Section *************
 
