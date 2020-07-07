@@ -21,9 +21,10 @@ if (IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {
 var valid_asset_types = [3];
 var line_class = "CommunicationsLine";
 var device_class = "CommunicationsDevice";
-var fiber_count = $feature.ContentCount;
+var strand_count = $feature.ContentCount;
 var tube_count = $feature.TubeCount;
 var network_level = $feature.networklevel;
+var strand_status_avail = 1;
 var point_spacing = .5;
 var offset_distance = .1;
 var z_level = -1000;
@@ -420,11 +421,11 @@ if (IndexOf(valid_asset_types, $feature.assettype) == -1) {
 }
 
 // Require a value for fiber count
-if (IsEmpty(fiber_count) || fiber_count == 0) {
+if (IsEmpty(strand_count) || strand_count == 0) {
     return {'errorMessage': 'A value is required for the content count field'};
 }
 // Fiber count must be even if not 1 strand
-if (fiber_count > 1 && is_even(fiber_count) == false) {
+if (strand_count > 1 && is_even(strand_count) == false) {
     return {'errorMessage': 'Fiber count must be even if not one strand'};
 }
 // Get the tube count based on the cable design and strand count
@@ -432,11 +433,11 @@ if (IsEmpty(tube_count)) {
     return {'errorMessage': 'Number of tubes is required'};
 }
 // Ensure the strand distribution is even
-var strand_per_tube = iif(fiber_count == 1, 1, fiber_count / tube_count);
+var strand_per_tube = iif(strand_count == 1, 1, strand_count / tube_count);
 if (strand_per_tube > 1 && strand_per_tube % 1 != 0) {
     return {
         'errorMessage': 'Fiber per tube distribution is not uniform: ' +
-            'Fiber Count:' + fiber_count + TextFormatting.NewLine +
+            'Fiber Count:' + strand_count + TextFormatting.NewLine +
             'Tube Count:' + tube_count + TextFormatting.NewLine +
             'Strands Per Tube:' + strand_per_tube
     };
@@ -468,15 +469,15 @@ var end_angle = angle_line_at_point(assigned_line_geo, to_point);
 end_angle = (450 - end_angle) % 360;
 //end_angle = end_angle + 90;
 
-var contained_line_from_point = Dictionary(Text(from_point))
-contained_line_from_point['z'] = z_level
-contained_line_from_point = pop_empty(contained_line_from_point)
-var contained_line_to_point = Dictionary(Text(to_point))
-contained_line_to_point['z'] = z_level
-contained_line_to_point = pop_empty(contained_line_to_point)
+var contained_line_from_point = Dictionary(Text(from_point));
+contained_line_from_point['z'] = z_level;
+contained_line_from_point = pop_empty(contained_line_from_point);
+var contained_line_to_point = Dictionary(Text(to_point));
+contained_line_to_point['z'] = z_level;
+contained_line_to_point = pop_empty(contained_line_to_point);
 
-var from_offset_line = offset_line(Point(contained_line_from_point), fiber_count, point_spacing, offset_distance, start_angle);
-var to_offset_line = offset_line(Point(contained_line_to_point), fiber_count, point_spacing, offset_distance, end_angle);
+var from_offset_line = offset_line(Point(contained_line_from_point), strand_count, point_spacing, offset_distance, start_angle);
+var to_offset_line = offset_line(Point(contained_line_to_point), strand_count, point_spacing, offset_distance, end_angle);
 
 var attributes = {};
 var line_adds = [];
@@ -563,7 +564,8 @@ for (var tube_index = 1; tube_index <= tube_count; tube_index++) {
             'StrandID': strand_index,
             'TubeID': tube_index,
             'IsSpatial': 0,
-            'NetworkLevel': network_level
+            'NetworkLevel': network_level,
+            'StrandStatus': strand_status_avail
         };
         line_adds[Count(line_adds)] = {
             'attributes': attributes,

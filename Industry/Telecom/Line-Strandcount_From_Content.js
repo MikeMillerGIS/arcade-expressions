@@ -1,22 +1,22 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Populate fibercount
+// Name: Populate strandcount
 // Description: Calculates number of Fiber features contained within feature
 // Subtypes: All
-// Field: fibercount
+// Field: strandcount
 // Trigger: Update
 // Exclude From Client: True
 // Disable: False
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
-var assigned_to_field = $feature.fibercount;
+var assigned_to_field = $feature.strandcount;
 var assetgroup_value = $feature.assetgroup;
 var assettype_value = $feature.assettype;
 var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
 var valid_asset_types = [3];
 var line_class = "CommunicationsLine";
-var fiber_sql = 'assetgroup = 8 AND assettype = 163';
+var fiber_sql = 'assetgroup = 8';
 
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
