@@ -78,8 +78,9 @@ var popup = `<!DOCTYPE html>
                              var txt_width = ctx.measureText(txt).width;
                              var lineheight = 15;
                              var lines = txt.split('_split_');
-                             var x = x_val - (txt_width/2); 
-                             var y = y_val + circle_radius *2 + 5;
+                             //var x = x_val - (txt_width/2); 
+                             var x = x_val - circle_radius *2; 
+                             var y = y_val + circle_radius *2 + 3;
                              for (var j = 0; j<lines.length; j++){
                                 ctx.fillText(lines[j], x, y + (j*lineheight) );
                              }
