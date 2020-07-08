@@ -125,7 +125,7 @@ if (IsEmpty(association_status) || has_bit(association_status,1) == false){
 }
 
 var associated_ids = get_content_feature_ids($feature);
-if (IsEmpty(associated_ids) || Text(associated_ids[class_name]) == '[]') {
+if (IsEmpty(associated_ids) || Text(associated_ids[line_class]) == '[]') {
     return 0;
 }
 
