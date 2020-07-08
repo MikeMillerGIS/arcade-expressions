@@ -88,10 +88,12 @@ if (IsEmpty(strand_contents)) return network_level;
 
 // Build updates list using filtered content features and set networklevel to container networklevel value
 var updates_list = [];
+var attrs = {};
+attrs[network_level_field] = network_level;
 for (var strand in strand_contents) {
     updates_list[Count(updates_list)] = {
         'globalid': strand.globalid,
-        'attributes': {network_level_field: network_level}
+        'attributes': attrs
     }
 }
 
