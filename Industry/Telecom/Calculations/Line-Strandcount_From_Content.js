@@ -1,36 +1,48 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
 // Name: Populate strandcount
-// Description: Calculates number of Fiber features contained within feature
+// Description: Calculates number of Strand features contained within feature
 // Subtypes: All
 // Field: strandcount
 // Trigger: Update
 // Exclude From Client: True
 // Disable: False
 
+// Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
+//    - Line-Strand_Attrs_For_Container: Operates in conjunction to maintain strand count attributes
+
+// Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
+//    - None
+
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
-var assigned_to_field = $feature.strandcount;
-var assetgroup_value = $feature.assetgroup;
-var assettype_value = $feature.assettype;
-var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
-var valid_asset_types = [3];
-var line_class = "CommunicationsLine";
-var fiber_sql = 'assetgroup = 8';
 
+// The field the rule is assigned to
+// ** Implementation Note: Adjust this value only if the field name for Strand Count differs
+var assigned_to_field = $feature.strandcount;
+
+// Limit the rule to valid asset groups/subtypes
+// ** Implementation Note: Instead of recreating this rule for each subtype, this rule uses a list of subtypes and exits if not valid
+//    If you have added Asset Groups, they will need to be added to this list.
+var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
+
+// The class name of the content Strands
+// ** Implementation Note: This is just the class name and should not be fully qualified. Adjust this only if class name differs.
+var line_class = "CommunicationsLine";
+
+// The sql query for Strand asset group
+// ** Implementation Note: This value does not need to change if using the industry data model
+var strand_sql = 'assetgroup = 8';
+
+// The FeatureSetByName function requires a string literal for the class name. These are just the class name and should not be fully qualified
+// ** Implementation Note: Optionally change/add feature class names to match you implementation
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
-    if (class_name == "CommunicationsDevice") {
-        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
-    } else if (class_name == "CommunicationsLine") {
+    if (class_name == "CommunicationsLine") {
         feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
-    } else if (class_name == "CommunicationsAssembly") {
-        feature_set = FeatureSetByName($datastore, "CommunicationsAssembly", fields, include_geometry);
-    } else if (class_name == 'Associations') {
-        feature_set = FeatureSetByName($datastore, 'UN_5_Associations', fields, false);
     } else {
-        feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
+        feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
     }
     return feature_set;
 }
@@ -100,11 +112,8 @@ function get_features_counts_by_query(associated_ids, sql){
 
 // ************* End Functions Section *****************
 
-// Limit the rule to valid subtypes and asset types
-if (Count(valid_asset_groups) > 0 && IndexOf(valid_asset_groups, assetgroup_value) == -1) {
-    return assigned_to_field;
-}
-if (Count(valid_asset_types) > 0 && IndexOf(valid_asset_types, assettype_value) == -1) {
+// Limit the rule to valid subtypes
+if (Count(valid_asset_groups) > 0 && IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {
     return assigned_to_field;
 }
 
@@ -116,8 +125,8 @@ if (IsEmpty(association_status) || has_bit(association_status,1) == false){
 }
 
 var associated_ids = get_content_feature_ids($feature);
-if (IsEmpty(associated_ids)){
+if (IsEmpty(associated_ids) || Text(associated_ids[class_name]) == '[]') {
     return 0;
 }
 
-return {"result": get_features_counts_by_query(associated_ids,fiber_sql)};
+return {"result": get_features_counts_by_query(associated_ids,strand_sql)};

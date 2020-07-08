@@ -8,34 +8,60 @@
 // Exclude From Client: True
 // Disable: False
 
+// Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
+//    - Line-Strandsavailable_From_Strandcount: This rule updates the Strandsavailable field of the Cable to match the number of Strands created.
+
+// Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
+//    - None
+
+
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
+
+// The field the rule is assigned to
+// ** Implementation Note: The field this rule is assigned to does not matter as it does not affect the assigned to field
 var assigned_to_field = $feature.assetid;
 
-// Limit the rule to valid subtypes
+// Limit the rule to valid asset groups/subtypes
+// ** Implementation Note: Instead of recreating this rule for each subtype, this rules uses a list of subtypes and exits if not valid
+//    If you have added Asset Groups, they will need to be added to this list.
 var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
-if (IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {
-    return assigned_to_field;
-}
 
+// Limit the rule to valid asset types
+// ** Implementation Note: Instead of recreating this rule for each asset type, this rules uses a list of domains and exits if not valid
+//    If you have added Asset Types, they will need to be added to this list.
 var valid_asset_types = [3];
+
+// The class names of the Strands and the Devices
+// ** Implementation Note: These are just the class name and should not be fully qualified.
 var line_class = "CommunicationsLine";
 var device_class = "CommunicationsDevice";
-var strand_count = $feature.ContentCount;
+
+// The fields for Strand Count, Tube Count, and Network Level
+// ** Implementation Note: Adjust these values only if the field names differ
+var strand_count = $feature.StrandCount;
 var tube_count = $feature.TubeCount;
 var network_level = $feature.networklevel;
+
+// Strand status default value for all Strands created
+// ** Implementation Note: This sets the Strand Status value to "Available" on all child Strands created by this rule.
 var strand_status_avail = 1;
+
+
 var point_spacing = .5;
 var offset_distance = .1;
 var z_level = -1000;
 // The Asset Group and Type of the tubes in a cable
+
 // The Asset Group and Asset Type of the fiber strand
+// ** Implementation Note: Adjust this only if the asset group and/or asset type of Strands differs
 var strands_AG = 8;
 var strands_AT = 163;
 var strand_sql = 'AssetGroup = ' + strands_AG + ' AND  AssetType = ' + strands_AT;
 
 var new_splice_feature_AG = 12;
 var new_splice_feature_AT = 143;
+
 //Device,Asset Group=3,Asset Type=1 acts as a splitter
 //Device,Asset Group=(1,2,3,5,6,7),Asset Type=3 acts as a splice
 //Device,Asset Group=(1,2,5,6,7),Asset Type=1 acts as a pass-through
@@ -57,6 +83,11 @@ var strand_snap_types = {
     'pass-through': 'AssetGroup = 8 AND AssetType = 143' // Port: Strand Termination
 };
 
+// The FeatureSetByName function requires a string literal for the class name.  These are just the class name and should not be fully qualified
+// ** Implementation Note: Adjust these to match the name of the domain.  The domain name will only change if you adjusted this in the
+//    A_DomainNetwork table and renamed the domain classes in the asset package prior to applying it.
+//    If applying to Enterprise, you will need to set the is_enteprise flag to true to load the associations table correctly
+var is_enterprise = false;
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
@@ -66,9 +97,11 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
         feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
     } else if (class_name == "CommunicationsAssembly") {
         feature_set = FeatureSetByName($datastore, "CommunicationsAssembly", fields, include_geometry);
-    } else if (class_name == 'Associations') {
+    } else if (class_name == 'Associations' && is_enterprise == false) {
         feature_set = FeatureSetByName($datastore, 'UN_5_Associations', fields, false);
-    } else {
+    } else if (class_name == 'Associations' && is_enterprise == true){
+        feature_set = FeatureSetByName($datastore, 'Associations', fields, false)
+    }else {
         feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
     }
     return feature_set;
@@ -415,14 +448,18 @@ function splice_to_point(port_features, prep_line_offset, strand_id, tube_id, st
 
 // Validation
 
-// Limit the rule to valid subtypes
+// Limit the rule to valid asset groups
+if (IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {
+    return assigned_to_field;
+}
+// Limit the rule to valid asset types
 if (IndexOf(valid_asset_types, $feature.assettype) == -1) {
     return assigned_to_field;
 }
 
 // Require a value for fiber count
 if (IsEmpty(strand_count) || strand_count == 0) {
-    return {'errorMessage': 'A value is required for the content count field'};
+    return {'errorMessage': 'A value is required for the strand count field'};
 }
 // Fiber count must be even if not 1 strand
 if (strand_count > 1 && is_even(strand_count) == false) {
