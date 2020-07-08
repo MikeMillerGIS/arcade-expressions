@@ -96,10 +96,8 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
         feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
     } else if (class_name == "CommunicationsAssembly") {
         feature_set = FeatureSetByName($datastore, "CommunicationsAssembly", fields, include_geometry);
-    } else if (class_name == 'Associations' && is_enterprise == false) {
+    } else if (class_name == 'Associations') {
         feature_set = FeatureSetByName($datastore, 'UN_5_Associations', fields, false);
-    } else if (class_name == 'Associations' && is_enterprise == true){
-        feature_set = FeatureSetByName($datastore, 'Associations', fields, false)
     }else {
         feature_set = FeatureSetByName($datastore, "CommunicationsDevice", fields, include_geometry);
     }
