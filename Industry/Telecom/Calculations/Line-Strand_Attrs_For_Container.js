@@ -14,7 +14,6 @@
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None
 
-
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
 
