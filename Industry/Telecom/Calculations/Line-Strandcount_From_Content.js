@@ -35,7 +35,7 @@ var line_class = "CommunicationsLine";
 var strand_sql = 'assetgroup = 8';
 
 // The FeatureSetByName function requires a string literal for the class name. These are just the class name and should not be fully qualified
-// ** Implementation Note: Optionally change/add feature class names to match you implementation
+// ** Implementation Note: Optionally change/add feature class names to match your implementation
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;

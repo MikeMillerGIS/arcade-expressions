@@ -9,7 +9,7 @@
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
-//    - None
+//    - Line-Strandcount_For_Content: Operates in conjunction to maintain strand count attributes
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None
@@ -24,7 +24,7 @@ var strand_status = $feature.strandstatus;
 var orig_strand_status = $originalfeature.strandstatus;
 
 // Optionally limit rule to specific asset types.
-// ** Implementation Note: Add to list too limit rule to specific asset types. If not specified, will be ignored.
+// ** Implementation Note: Add to list to limit rule to specific asset types. If not specified, will be ignored.
 var assettype_value = $feature.assettype;
 var valid_asset_types = [];
 

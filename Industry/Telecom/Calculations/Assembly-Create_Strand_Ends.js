@@ -43,7 +43,7 @@ var offset_distance = DefaultValue($feature.terminatoroffset, 0);
 var device_class = "CommunicationsDevice";
 
 // The asset group and asset type of strand end port devices
-// ** Implemenation Note: These values does not need to change if using the industry data model
+// ** Implemenation Note: These values do not need to change if using the industry data model
 var port_ag = 8;
 var port_at = 143;
 

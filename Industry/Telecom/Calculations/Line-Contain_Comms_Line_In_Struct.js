@@ -30,7 +30,7 @@ var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
 // ** Implementation Note: Add to list to limit rule to specific asset types. If not specified, will be ignored
 var valid_asset_types = [];
 
-// Call the StructureLine class on which a distance search can be performed
+// Call the StructureLine class on which a distance search will be performed
 // ** Implementation Note: Only update the class name and field names if they differ.
 var feature_set = FeatureSetByName($datastore, 'StructureLine', ["OBJECTID", "GLOBALID", "ASSOCIATIONSTATUS", "AssetGroup", "AssetType"], true);
 

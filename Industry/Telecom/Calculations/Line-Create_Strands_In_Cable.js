@@ -50,7 +50,6 @@ var strand_status_avail = 1;
 var point_spacing = .5;
 var offset_distance = .1;
 var z_level = -1000;
-// The Asset Group and Type of the tubes in a cable
 
 // The Asset Group and Asset Type of the fiber strand
 // ** Implementation Note: Adjust this only if the asset group and/or asset type of Strands differs
