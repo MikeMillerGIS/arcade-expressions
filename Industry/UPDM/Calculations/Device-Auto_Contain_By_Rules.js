@@ -67,8 +67,6 @@ function class_id_to_name(id) {
 // The FeatureSetByName function requires a string literal for the class name.  These are just the class name and should not be fully qualified
 // ** Implementation Note: Adjust these to match the name of the domain.  The domain name will only change if you adjusted this in the
 //    A_DomainNetwork table and renamed the domain classes in the asset package prior to applying it.
-//    If applying to Enterprise, you will need to set the is_enteprise flag to true to load the rules table correctly
-var is_enterprise = false;
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, ".")[-1];
     var feature_set = null;
@@ -86,10 +84,8 @@ function get_features_switch_yard(class_name, fields, include_geometry) {
         feature_set = FeatureSetByName($datastore, "StructureLine", fields, include_geometry);
     } else if (class_name == "StructureBoundary") {
         feature_set = FeatureSetByName($datastore, "StructureBoundary", fields, include_geometry);
-    } else if (class_name == "Rules" && is_enterprise == false) {
+    } else if (class_name == "Rules") {
         feature_set = FeatureSetByName($datastore, "UN_5_Rules", fields, false);
-    } else if (class_name == "Rules" && is_enterprise == true) {
-        feature_set = FeatureSetByName($datastore, "Rules", fields, false);
     } else {
         feature_set = FeatureSetByName($datastore, "StructureBoundary", fields, include_geometry);
     }
