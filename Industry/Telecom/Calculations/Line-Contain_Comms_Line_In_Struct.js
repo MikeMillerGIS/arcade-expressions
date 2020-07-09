@@ -125,8 +125,11 @@ if (IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {
 if (Count(valid_asset_types) > 0 && IndexOf(valid_asset_types, $feature.assettype) == -1) {
     return assigned_to_value;
 }
-if (Count(invalid_ag_and_at) > 0 && invalid_ag_and_at[0][0] == $feature.assetgroup && invalid_ag_and_at[0][1] == $feature.assettype) {
-    return assigned_to_value
+for (var idx in invalid_ag_and_at) {
+    var ag_and_at = invalid_ag_and_at[idx];
+    if (ag_and_at[0] == $feature.assetgroup && ag_and_at[1] == $feature.assettype) {
+        return assigned_to_value
+    }
 }
 
 // Buffer the features to find features within a certain distance
