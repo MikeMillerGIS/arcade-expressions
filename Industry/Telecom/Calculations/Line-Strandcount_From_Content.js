@@ -34,18 +34,10 @@ var line_class = "CommunicationsLine";
 // ** Implementation Note: This value does not need to change if using the industry data model
 var strand_sql = 'assetgroup = 8';
 
-// The FeatureSetByName function requires a string literal for the class name. These are just the class name and should not be fully qualified
-// ** Implementation Note: Optionally change/add feature class names to match your implementation
-function get_features_switch_yard(class_name, fields, include_geometry) {
-    var class_name = Split(class_name, '.')[-1];
-    var feature_set = null;
-    if (class_name == "CommunicationsLine") {
-        feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
-    } else {
-        feature_set = FeatureSetByName($datastore, "CommunicationsLine", fields, include_geometry);
-    }
-    return feature_set;
-}
+// Call the strands class using FeatureSetByName function.
+// ** Implementation Note: In the industry data model this is CommunicationsLine. Used to count number of strands contained in Cable.
+var feature_set = FeatureSetByName($datastore, "CommunicationsLine", ["globalid"], false);
+
 
 // ************* End User Variables Section *************
 
@@ -102,8 +94,7 @@ function has_bit(num, test_value) {
 }
 
 function get_features_counts_by_query(associated_ids, sql){
-    // loop over classes
-    var feature_set = get_features_switch_yard(line_class, ["globalid"], false);
+    // Count number of content features of cable that are strands.
     var global_ids = associated_ids[line_class];
     var fcnt = Count(Filter(feature_set, sql + " AND globalid IN @global_ids"));
     // Return the features
@@ -118,8 +109,7 @@ if (Count(valid_asset_groups) > 0 && IndexOf(valid_asset_groups, $feature.assetg
 }
 
 var association_status = $feature.ASSOCIATIONSTATUS;
-// Only features with an association status of container(bit 1)
-// need to be evaluated
+// Only features with an association status of container(bit 1) need to be evaluated
 if (IsEmpty(association_status) || has_bit(association_status,1) == false){
     return assigned_to_field;
 }
