@@ -30,6 +30,10 @@ var valid_asset_groups = [1, 3, 4, 5, 6, 7, 9];
 // ** Implementation Note: Add to list to limit rule to specific asset types. If not specified, will be ignored
 var valid_asset_types = [];
 
+// Exclude specific asset group and asset type combinations.
+// ** Implementation Note: Specific Cable types can be excluded by adding to this list in following format  [AG, AT]
+var invalid_ag_and_at = [[5, 4]];
+
 // Call the StructureLine class on which a distance search will be performed
 // ** Implementation Note: Only update the class name and field names if they differ.
 var feature_set = FeatureSetByName($datastore, 'StructureLine', ["OBJECTID", "GLOBALID", "ASSOCIATIONSTATUS", "AssetGroup", "AssetType"], true);
@@ -118,9 +122,13 @@ function has_bit(num, test_value) {
 if (IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {
     return assigned_to_value;
 }
-if (Count(valid_asset_types) > 0 && indexof(valid_asset_types, $feature.assettype) == -1) {
+if (Count(valid_asset_types) > 0 && IndexOf(valid_asset_types, $feature.assettype) == -1) {
     return assigned_to_value;
 }
+if (Count(invalid_ag_and_at) > 0 && invalid_ag_and_at[0][0] == $feature.assetgroup && invalid_ag_and_at[0][1] == $feature.assettype) {
+    return assigned_to_value
+}
+
 // Buffer the features to find features within a certain distance
 var closest_features = Intersects(feature_set, Buffer(Geometry($feature), search_distance, search_unit));
 // Filter the closest results based on the sql to get assets of a certain type
