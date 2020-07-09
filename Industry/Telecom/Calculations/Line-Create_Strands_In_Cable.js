@@ -46,9 +46,10 @@ var network_level = $feature.networklevel;
 // ** Implementation Note: This sets the Strand Status value to "Available" on all child Strands created by this rule.
 var strand_status_avail = 1;
 
-
 var point_spacing = .5;
 var offset_distance = .1;
+
+// The z value of unsnapped strands
 var z_level = -1000;
 
 // The Asset Group and Asset Type of the fiber strand
@@ -57,6 +58,8 @@ var strands_AG = 8;
 var strands_AT = 163;
 var strand_sql = 'AssetGroup = ' + strands_AG + ' AND  AssetType = ' + strands_AT;
 
+// The Asset Group and Asset Type of splice feature
+// ** Implementation Note: Adjust this only if the asset group and/or asset type of splice differs
 var new_splice_feature_AG = 12;
 var new_splice_feature_AT = 143;
 
@@ -81,11 +84,9 @@ var strand_snap_types = {
     'pass-through': 'AssetGroup = 8 AND AssetType = 143' // Port: Strand Termination
 };
 
-// The FeatureSetByName function requires a string literal for the class name.  These are just the class name and should not be fully qualified
+// The FeatureSetByName function requires a string literal for the class name.  These are just the class names and should not be fully qualified
 // ** Implementation Note: Adjust these to match the name of the domain.  The domain name will only change if you adjusted this in the
 //    A_DomainNetwork table and renamed the domain classes in the asset package prior to applying it.
-//    If applying to Enterprise, you will need to set the is_enteprise flag to true to load the associations table correctly
-var is_enterprise = false;
 function get_features_switch_yard(class_name, fields, include_geometry) {
     var class_name = Split(class_name, '.')[-1];
     var feature_set = null;
@@ -209,6 +210,7 @@ function get_line_ends(container_guid, container_type) {
     if (!IsEmpty(container_guid)) {
         var port_features = null;
         var new_geo = null;
+        // Using the associations table to get child global ids. Cannot use FeatureSetByAssociation because we only have the guid
         var assoc_fs = get_features_switch_yard('Associations', ['TOGLOBALID'], false);
         var filtered_fs = Filter(assoc_fs, "fromglobalid = @container_guid and ASSOCIATIONTYPE = 2");
         var contained_ids = [];
@@ -490,7 +492,7 @@ snapped_container_info = get_snapped_container_info(Point(to_point));
 var to_container_GUID = snapped_container_info[0];
 var to_container_snap_type = snapped_container_info[1];
 
-// Get the from and to features the strands need to be adjusted too
+// Get the from and to features the strands need to be adjusted to
 var from_port_features = get_line_ends(from_container_GUID, from_container_snap_type);
 var to_port_features = get_line_ends(to_container_GUID, to_container_snap_type);
 
