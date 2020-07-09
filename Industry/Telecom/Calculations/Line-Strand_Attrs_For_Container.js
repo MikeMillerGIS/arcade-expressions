@@ -79,48 +79,71 @@ function get_contain_feature_ids(feature) {
     return associated_ids;
 }
 
-function get_cable_changes (old_status, new_status) {
-    var ret_dict = Dictionary(
-        strands_available, 0,
-        strands_dedicated, 0,
-        strands_inuse, 0,
-        strands_pendingconnect, 0,
-        strands_pendingdisconnect, 0,
-        strands_reserved, 0,
-        strands_unusable, 0
-    );
+function get_cable_updates(container_ids, container_fs, strand_status, orig_strand_status) {
+    // build the updates list to be inserted in the edit payload.
+    // payload can potentially have more than one edit because more than one container possible
+    var cable_updates = [];
+    for (var idx in container_ids) {
+        var attributes = {};
+        var cont_id = container_ids[idx];
+        var container_row = First(Filter(container_fs, "globalid = @cont_id"));
+        var orig_strands_available = container_row[strands_available];
+        var orig_strands_dedicated = container_row[strands_dedicated];
+        var orig_strands_inuse = container_row[strands_inuse];
+        var orig_strands_pendingconnect = container_row[strands_pendingconnect];
+        var orig_strands_pendingdisconnect = container_row[strands_pendingdisconnect];
+        var orig_strands_reserved = container_row[strands_reserved];
+        var orig_strands_unusable = container_row[strands_unusable];
+        // increment strand count fields using new strand status
+        if (strand_status == 1) {
+            attributes[strands_available] = orig_strands_available + 1;
+        }
+        if (strand_status == 2) {
+            attributes[strands_inuse] = orig_strands_inuse + 1;
+        }
+        if (strand_status == 3) {
+            attributes[strands_reserved] = orig_strands_reserved + 1;
+        }
+        if (strand_status == 4) {
+            attributes[strands_dedicated] = orig_strands_dedicated + 1;
+        }
+        if (strand_status == 5) {
+            attributes[strands_unusable] = orig_strands_unusable + 1;
+        }
+        if (strand_status == 6) {
+            attributes[strands_pendingconnect] = orig_strands_pendingconnect + 1;
+        }
+        if (strand_status == 7) {
+            attributes[strands_pendingdisconnect] = orig_strands_pendingdisconnect + 1;
+        }
 
-    if (new_status == 1) {
-        ret_dict[strands_available] = 1;}
-    else if (new_status == 2) {
-        ret_dict[strands_inuse] = 1;}
-    else if (new_status == 3) {
-        ret_dict[strands_reserved] = 1;}
-    else if (new_status == 4) {
-        ret_dict[strands_dedicated] = 1;}
-    else if (new_status == 5) {
-        ret_dict[strands_unusable] = 1;}
-    else if (new_status == 6) {
-        ret_dict[strands_pendingconnect] = 1;}
-    else if (new_status == 7) {
-        ret_dict[strands_pendingdisconnect] = 1}
-
-    if (old_status == 1) {
-        ret_dict[strands_available] = -1;}
-    else if (old_status == 2) {
-        ret_dict[strands_inuse] = -1;}
-    else if (old_status == 3) {
-        ret_dict[strands_reserved] = -1;}
-    else if (old_status == 4) {
-        ret_dict[strands_dedicated] = -1;}
-    else if (old_status == 5) {
-        ret_dict[strands_unusable] = -1;}
-    else if (old_status == 6) {
-        ret_dict[strands_pendingconnect] = -1;}
-    else if (old_status == 7) {
-        ret_dict[strands_pendingdisconnect] = -1;}
-
-    return ret_dict
+        // decrement strand count fields using old strand status
+        if (orig_strand_status == 1) {
+            attributes[strands_available] = orig_strands_available - 1;
+        }
+        if (orig_strand_status == 2) {
+            attributes[strands_inuse] = orig_strands_inuse - 1;
+        }
+        if (orig_strand_status == 3) {
+            attributes[strands_reserved] = orig_strands_reserved - 1;
+        }
+        if (orig_strand_status == 4) {
+            attributes[strands_dedicated] = orig_strands_dedicated - 1;
+        }
+        if (orig_strand_status == 5) {
+            attributes[strands_unusable] = orig_strands_unusable - 1;
+        }
+        if (orig_strand_status == 6) {
+            attributes[strands_pendingconnect] = orig_strands_pendingconnect - 1;
+        }
+        if (orig_strand_status == 7) {
+            attributes[strands_pendingdisconnect] = orig_strands_pendingdisconnect - 1;
+        }
+        // add row update to updates list
+        cable_updates[Count(cable_updates)] = {'globalID': cont_id,
+                                               'attributes': attributes};
+    }
+    return cable_updates
 }
 
 
@@ -144,45 +167,8 @@ var container_fs = get_features_switch_yard(cable_class,
     [strands_available, strands_dedicated, strands_inuse, strands_pendingconnect, strands_pendingdisconnect, strands_reserved, strands_unusable],
     false);
 
-var cable_changes = get_cable_changes(orig_strand_status, strand_status);
-//return{'errorMessage': Text(cable_changes)};
-// build payload with potentially more than one edit
-var cable_updates = [];
-for (var idx in container_ids) {
-    var attributes = {};
-    var cont_id = container_ids[idx];
-    var container_row = First(Filter(container_fs, "globalid = @cont_id"));
-    var orig_strands_available = container_row[strands_available];
-    var orig_strands_dedicated = container_row[strands_dedicated];
-    var orig_strands_inuse = container_row[strands_inuse];
-    var orig_strands_pendingconnect = container_row[strands_pendingconnect];
-    var orig_strands_pendingdisconnect = container_row[strands_pendingdisconnect];
-    var orig_strands_reserved = container_row[strands_reserved];
-    var orig_strands_unusable = container_row[strands_unusable];
-    if (cable_changes[strands_available] != 0) {
-        attributes[strands_available] = orig_strands_available + cable_changes[strands_available];
-    }
-    if (cable_changes[strands_dedicated] != 0) {
-        attributes[strands_dedicated] = orig_strands_dedicated + cable_changes[strands_dedicated];
-    }
-    if (cable_changes[strands_inuse] != 0) {
-        attributes[strands_inuse] = orig_strands_inuse + cable_changes[strands_inuse];
-    }
-    if (cable_changes[strands_pendingconnect] != 0) {
-        attributes[strands_pendingconnect] = orig_strands_pendingconnect + cable_changes[strands_pendingconnect];
-    }
-    if (cable_changes[strands_pendingdisconnect] != 0) {
-        attributes[strands_pendingdisconnect] = orig_strands_pendingdisconnect + cable_changes[strands_pendingdisconnect];
-    }
-    if (cable_changes[strands_reserved] != 0) {
-        attributes[strands_reserved] = orig_strands_reserved + cable_changes[strands_reserved];
-    }
-    if (cable_changes[strands_unusable] != 0) {
-        attributes[strands_unusable] = orig_strands_unusable + cable_changes[strands_unusable];
-    }
-    cable_updates[Count(cable_updates)] = {'globalID': cont_id,
-                                           'attributes': attributes};
-}
+// build updates list with potentially more than one row
+var cable_updates = get_cable_updates(container_ids, container_fs, strand_status, orig_strand_status);
 
 var edit_payload = [
     {'className': cable_class,
