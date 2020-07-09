@@ -1,4 +1,4 @@
-// Assigned To: StructureLine
+// Assigned To: CommunicationsLine
 // Type: Calculation
 // Name: Get measured length
 // Description: Calculate length of line in specified units
@@ -21,15 +21,11 @@
 // ** Implementation Note: This value does not need to change if using the industry data model
 var assigned_to_field = $feature.measuredlength;
 
-// Field used to calculate measure length
-// ** Implementation Note: This value does not need to change
-var shape_length = $feature.SHAPE_Length;
-
 // ************* End User Variables Section *************
 
 // Only calculate if field is null or zero
 if (IsEmpty(assigned_to_field) || assigned_to_field == 0) {
-    return shape_length;
+    return Length(Geometry($Feature));
 }
 
 return assigned_to_field;
