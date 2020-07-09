@@ -39,7 +39,7 @@ var feature_set = FeatureSetByName($datastore, "StructureJunction", ["OBJECTID",
 var filter_sql = "AssetGroup in (103, 104, 105, 125) and AssetType in (81, 121, 201, 241, 361, 581, 582)";
 
 // The maximum distance from a structure junction feature to create connection points
-// ** Implementation Note: This value is derived from the field. If field is field is null or empty, the value will default
+// ** Implementation Note: This value is derived from the field. If field is null or empty, the value will default
 //    to number shown in second parameter.
 var search_distance = DefaultValue($feature.searchdistance, 75);
 
