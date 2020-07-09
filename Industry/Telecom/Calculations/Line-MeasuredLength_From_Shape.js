@@ -21,11 +21,15 @@
 // ** Implementation Note: This value does not need to change if using the industry data model
 var assigned_to_field = $feature.measuredlength;
 
+// The unit of measure used to calculate length
+// ** Implementation Note: Options for Unit of Measure: https://developers.arcgis.com/arcade/function-reference/geometry_functions/#units-reference
+var unit_of_measure = 'feet';
+
 // ************* End User Variables Section *************
 
 // Only calculate if field is null or zero
 if (IsEmpty(assigned_to_field) || assigned_to_field == 0) {
-    return Length(Geometry($Feature));
+    return Length(Geometry($Feature), unit_of_measure);
 }
 
 return assigned_to_field;
