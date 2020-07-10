@@ -100,7 +100,7 @@ class ApplyIndustryRules:
         all_seq = []
         pat = re.compile("(?:'sequence': )'(.*?)'")
         for path in self.industry.rglob('*.js'):
-            if path.parent.name.lower() not in ['Calculation', 'Constraint', 'Validation']:
+            if path.parent.name.lower() not in ['calculation', 'constraint', 'validation']:
                 continue
             f = open(str(path), "r")
 
