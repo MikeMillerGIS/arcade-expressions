@@ -31,6 +31,5 @@ var unit_of_measure = 'feet';
 if (IsEmpty(assigned_to_field) || assigned_to_field == 0) {
     return Length(Geometry($feature), unit_of_measure);
 }
-}
 
 return assigned_to_field;
