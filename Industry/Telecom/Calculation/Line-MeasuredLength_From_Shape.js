@@ -1,4 +1,4 @@
-// Assigned To: StructureLine
+// Assigned To: CommunicationsLine
 // Type: Calculation
 // Name: Get measured length - Communication Line
 // Description: Calculate length of line in specified units
