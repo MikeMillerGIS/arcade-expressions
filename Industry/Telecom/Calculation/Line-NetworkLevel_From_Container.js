@@ -1,6 +1,6 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Get Network Level from container
+// Name: Line - NetworkLevel From Container
 // Description: Populates Network Level field with value from containing feature if ASSOCIATIONSTATUS changes
 // Subtypes: Strand
 // Field: networklevel
@@ -9,7 +9,7 @@
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
-//    - Line-NetworkLevel_For_Content: works in conjunction to keep network level value on content features in sync with container
+//    - Line - NetworkLevel For Content: works in conjunction to keep network level value on content features in sync with container
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None

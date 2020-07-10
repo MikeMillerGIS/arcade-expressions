@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Create Strands in Cable
-// Description: Generates strands inside the cable based on the content count field
+// Name: Line - Create Strands in Cable
+// Description: Generates strands inside a cable based on the strand count field
 // Subtypes: All
 // Field: assetid
 // Trigger: Insert
@@ -9,7 +9,7 @@
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
-//    - Line-Strandsavailable_From_Strandcount: This rule updates the Strandsavailable field of the Cable to match the number of Strands created.
+//    - Line - Strandsavailable From Strandcount: This rule updates the Strandsavailable field of the Cable to match the number of Strands created.
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None

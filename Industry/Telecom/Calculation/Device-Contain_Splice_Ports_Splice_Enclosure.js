@@ -1,6 +1,6 @@
 // Assigned To: CommunicationsDevice
 // Type: Calculation
-// Name: Contain Splice Ports in Splice Enclosure
+// Name: Device - Contain Splice Ports in Splice Enclosure
 // Description: Contain Splice Ports in Splice Enclosure using the ContainerGuid field
 // Subtypes: Splice
 // Field: containerGUID

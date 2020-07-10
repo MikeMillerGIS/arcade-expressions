@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsJunction
 // Type: Calculation
-// Name: Attach or Contain junction in structure
-// Description: Generates connection points at a vertex when within a distance of a structure junction
+// Name: Junction - Associate Line On Structure
+// Description: Attach or Contain junction in structure. Generates connection points at a vertex when within a distance of a structure junction.
 // Subtypes: Connection Point
 // Field: containerGUID
 // Trigger: Insert

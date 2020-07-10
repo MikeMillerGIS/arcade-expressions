@@ -1,12 +1,14 @@
 // Assigned To: CommunicationsAssembly
 // Type: Calculation
-// Name: Calculate Assembly Equipment ID
+// Name: Assembly - Equipment ID
 // Description: Calculate Assembly Equipment ID by parent container
 // Subtypes: Assembly Equipment
 // Field: AssetID
 // Trigger: Insert, Update
 // Exclude From Client: True
 // Disable: True
+
+// Implementation Note: This rule is disabled by default as it auto calculates the Asset ID.  If you desire this function, enable this rule and adjust
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
 //    - None
