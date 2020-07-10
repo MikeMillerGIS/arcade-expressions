@@ -6,7 +6,7 @@
 // Field: AssetID
 // Trigger: Insert, Update
 // Exclude From Client: True
-// Disable: False
+// Disable: True
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
 //    - None

@@ -1,18 +1,18 @@
-// Assigned To: CommunicationsLine
+// Assigned To: StructureLine
 // Type: Calculation
-// Name: Get measured length
+// Name: Get measured length - StructureLine
 // Description: Calculate length of line in specified units
 // Subtypes: All
 // Field: measuredlength
 // Trigger: Insert, Update
-// Exclude From Client: True
+// Exclude From Client: False
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
 //    - None
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
-//    - Line-MeasuredLength_From_Shape
+//    - Get measured length - Communications Line/Line-MeasuredLength_From_Shape.js
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
@@ -29,7 +29,7 @@ var unit_of_measure = 'feet';
 
 // Only calculate if field is null or zero
 if (IsEmpty(assigned_to_field) || assigned_to_field == 0) {
-    return Length(Geometry($Feature), unit_of_measure);
+    return Length(Geometry($feature), unit_of_measure);
 }
 }
 
