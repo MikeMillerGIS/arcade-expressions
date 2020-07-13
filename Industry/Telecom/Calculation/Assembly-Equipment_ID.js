@@ -111,7 +111,7 @@ function has_bit(num, test_value) {
 if (Count(valid_asset_types) > 0 && IndexOf(valid_asset_types, $feature.assettype) == -1) {
     return assigned_to_field;
 }
-if (IsEmpty(assigned_to_field) == false && assigned_to_field != '') {
+if (IsEmpty(assigned_to_field) == false) {
     return assigned_to_field
 }
 

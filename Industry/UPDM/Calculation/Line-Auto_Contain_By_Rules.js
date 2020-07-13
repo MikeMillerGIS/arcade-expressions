@@ -6,7 +6,7 @@
 // Field: assetid
 // Trigger: Insert, Update
 // Exclude From Client: True
-// Disable: False
+// Disable: True
 
 // Implementation Note: This rule is disabled by default as it auto performs containment of features when editing.  If you desire these functions, enable this rule and adjust the settings below.
 

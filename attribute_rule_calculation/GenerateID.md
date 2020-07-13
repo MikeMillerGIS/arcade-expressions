@@ -84,7 +84,7 @@ function remove_empty(arr) {
 }
 // ************* End Functions Section *****************
 
-if (IsEmpty(assigned_to_field) == false && assigned_to_field != '') {
+if (IsEmpty(assigned_to_field) == false) {
     return assigned_to_field
 }
 var new_id = get_id(id_selector_value)

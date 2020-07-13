@@ -5,6 +5,8 @@
 // Subtypes: All
 // Field: symbolrotation
 // Trigger: Insert, Update
+// Exclude From Client: False
+// Disable: False
 
 // Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
 //    - None

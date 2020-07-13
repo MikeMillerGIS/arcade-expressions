@@ -5,6 +5,8 @@
 // Subtypes: All
 // Field: assetid
 // Trigger: Insert
+// Exclude From Client: True
+// Disable: False
 
 // Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
 //    - None
@@ -136,7 +138,7 @@ function remove_empty(arr) {
 
 // ************* End Functions Section *****************
 
-if (IsEmpty(assigned_to_field) == false && assigned_to_field != '') {
+if (IsEmpty(assigned_to_field) == false) {
     return assigned_to_field
 }
 var new_id = get_id(id_selector_value)

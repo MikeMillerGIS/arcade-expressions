@@ -5,6 +5,8 @@
 // Subtypes: All
 // Field: cptraceability
 // Trigger: Insert, Update
+// Exclude From Client: False
+// Disable: False
 
 // Related Rules: Some rules are rely on additional rules for execution.  If this rule works in conjunction with another, they are listed below:
 //    - None
@@ -55,7 +57,7 @@ var not_traceable = 2; // Also used for Insulated
 
 // ************* End User Variables Section *************
 
-if (IsEmpty(assigned_to_field) == false && assigned_to_field != '') {
+if (IsEmpty(assigned_to_field) == false) {
     return assigned_to_field
 }
 if (TypeOf(valid_asset_groups) != 'Array' || IndexOf(valid_asset_groups, $feature.assetgroup) == -1) {

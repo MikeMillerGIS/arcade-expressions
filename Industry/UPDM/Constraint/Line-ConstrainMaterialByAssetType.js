@@ -6,7 +6,8 @@
 // Error Number: 5601
 // Error Message: Incompatible types for ASSETGROUP, assettype, material
 // Trigger: Insert, Update
-
+// Exclude From Client: False
+// Disable: False
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
