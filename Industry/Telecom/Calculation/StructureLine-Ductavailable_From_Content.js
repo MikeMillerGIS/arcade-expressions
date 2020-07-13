@@ -155,13 +155,13 @@ if (!IsEmpty(container_row)) {
 
 }
 
-edit_payload = [{'className':"StructureLine",
+var edit_payload = [{'className':"StructureLine",
                   'updates':[{
                               'globalID': container_row.globalid,
                               'attributes':{'maximumcapacity':max_cap,
                                             'usedcapacity': used_cap,
                                             'availablecapacity': avail_cap
-                                           }}]}]
+                                           }}]}];
 return {
     "result": assigned_to_field,
     "edit": edit_payload
