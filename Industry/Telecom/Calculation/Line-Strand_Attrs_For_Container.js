@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Populate strand attributes
-// Description: Update strand attibutes of Cable when Strand status changes in a content Strand.
+// Name: Line - Strand Attributes For Container
+// Description: Update strand attributes of Cable when Strand status changes in a content Strand.
 // Subtypes: Strand
 // Field: strandstatus
 // Trigger: Update
@@ -9,7 +9,7 @@
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
-//    - Line-Strandcount_For_Content: Operates in conjunction to maintain strand count attributes
+//    - Line - Strandcount From Content: Operates in conjunction to maintain strand count attributes
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None

@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Populate Strands available
-// Description: Populates strandsavailable field using strandcount when a Cable is created
+// Name: Line - Strandsavailable From Strandcount
+// Description: Populates strandsavailable field using strandcount field when a Cable is created
 // Subtypes: All
 // Field: strandsavailable
 // Trigger: Insert
@@ -9,8 +9,8 @@
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
-//    - Line-Create_Strands_In_Cable: Strands created are set with a strandstatus of available by default. The cable needs to have the
-//                                    strandsavailable value set accordingly.
+//    - Line - Create Strands In Cable: Strands created are set with a strandstatus of available by default. The cable needs to have the
+//                                      strandsavailable value set accordingly.
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None

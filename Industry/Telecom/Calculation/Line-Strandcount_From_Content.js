@@ -1,6 +1,6 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Populate strandcount
+// Name: Line - Strandcount From Content
 // Description: Calculates number of Strand features contained within feature
 // Subtypes: All
 // Field: strandcount
@@ -9,7 +9,7 @@
 // Disable: False
 
 // Related Rules: Some rules rely on additional rules for execution. If this rule works in conjunction with another, they are listed below:
-//    - Line-Strand_Attrs_For_Container: Operates in conjunction to maintain strand count attributes
+//    - Line - Strand Attributes For Container: Operates in conjunction to maintain strand count attributes
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
 //    - None

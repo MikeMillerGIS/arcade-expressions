@@ -1,6 +1,6 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Contain a Communications Line in Structure Line
+// Name: Line - Contain Communications Line In Structure Line
 // Description: Rule searches for structure line containers within a certain distance to contain the cable in it.
 // Subtypes: All
 // Field: assetid

@@ -1,6 +1,6 @@
 // Assigned To: StructureLine
 // Type: Calculation
-// Name: Create ducts in duct bank
+// Name: StructureLine - Create Ducts In Duct Bank
 // Description: Generates ducts inside duct banks based on the ductshigh and ductswide fields
 // Subtypes: Wire Duct Bank
 // Field: assetid

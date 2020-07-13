@@ -1,7 +1,7 @@
 // Assigned To: PipelineJunction
 // Type: Calculation
-// Name: Rotate Pipeline Devices to match intersecting Line
-// Description: This calculation attribute rule intersects a line layer and based on the number of intersected features, calculates the angle for the point
+// Name: Junction - Symbol Rotation
+// Description: Rotate Pipeline Devices to match intersecting Line. Intersects a line layer and based on the number of intersected features, calculates the angle for the point
 // Subtypes: All
 // Field: symbolrotation
 // Trigger: Insert, Update
@@ -10,8 +10,8 @@
 //    - None
 
 // Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
-//    - Device-Symbol_Rotation
-//    - Junction-Symbol_Rotation
+//    - Device - Symbol Rotation
+//    - Junction - Symbol Rotation
 
 // *************       User Variables       *************
 

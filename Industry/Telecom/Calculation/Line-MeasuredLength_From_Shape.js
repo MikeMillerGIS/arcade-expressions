@@ -1,6 +1,6 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Get measured length - Communication Line
+// Name: Line - MeasuredLength From Shape
 // Description: Calculate length of line in specified units
 // Subtypes: All
 // Field: measuredlength
@@ -12,7 +12,7 @@
 //    - None
 
 // Duplicated in: This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
-//    - Get measured length - Structure Line/StructureLine-MeasuredLength_From_Shape.js
+//    - StructureLine - MeasuredLength From Shape
 
 
 // *************       User Variables       *************

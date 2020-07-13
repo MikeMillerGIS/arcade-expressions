@@ -1,7 +1,7 @@
 // Assigned To: PipelineDevice
 // Type: Calculation
-// Name: Auto Contain Pipeline Devices
-// Description: Uses the rule table to contain feature in a container within a search distance
+// Name: Device - Auto Contain By Rules
+// Description: Auto contain pipeline devices. Uses the rule table to contain feature in a container within a search distance
 // Subtypes: All
 // Field: assetid
 // Trigger: Insert, Update
@@ -14,9 +14,9 @@
 //    - None
 
 // Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
-//    - Device-Auto_Contain_By_Rules
-//    - Junction-Auto_Contain_By_Rules
-//    - Line-Auto_Contain_By_Rules
+//    - Device - Auto Contain By Rules
+//    - Junction - Auto Contain By Rules
+//    - Line - Auto Contain By Rules
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation

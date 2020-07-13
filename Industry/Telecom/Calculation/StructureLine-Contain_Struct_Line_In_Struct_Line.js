@@ -1,7 +1,7 @@
 // Assigned To: StructureLine
 // Type: Calculation
-// Name: Contain a Structure Line in Structure Line
-// Description: Rule searches for structure line containers with a certain distance to contain the structure in it. This supports adding a conduit or duct bank in a trench or tunnel and a lashing guy in a Aerial Span.
+// Name: StructureLine - Contain Structure Line in Structure Line
+// Description: Rule searches for structure line containers within a certain distance to contain the structure in it. This supports adding a conduit or duct bank in a trench or tunnel and a lashing guy in a Aerial Span.
 // Subtypes: All
 // Field: Assetid
 // Trigger: Insert

@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsAssembly
 // Type: Calculation
-// Name: Create Strand Ends in Terminators
-// Description: Rule generates strand end port devices inside Terminator Devices based on field on the feature
+// Name: Assembly - Create Strand Ends
+// Description: Create Strand Ends in Terminators. Rule generates strand end port devices inside Terminator Devices based on field on the feature
 // Subtypes: All
 // Field: TerminatorCount
 // Trigger: Insert

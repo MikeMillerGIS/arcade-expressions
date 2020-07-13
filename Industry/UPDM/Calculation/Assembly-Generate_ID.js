@@ -1,6 +1,6 @@
 // Assigned To: PipelineAssembly
 // Type: Calculation
-// Name: Generate IDs for PipelineAssembly
+// Name: Assembly - Generate ID
 // Description: Generate IDs for PipelineAssembly using database sequences
 // Subtypes: All
 // Field: assetid
@@ -10,13 +10,13 @@
 //    - None
 
 // Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
-//    - Assembly-Generate_ID
-//    - Device-Generate_ID
-//    - Junction-Generate_ID
-//    - Line-Generate_ID
-//    - StructureBoundary-Generate_ID
-//    - StructureJunction-Generate_ID
-//    - StructureLine-Generate_ID
+//    - Assembly - Generate ID
+//    - Device - Generate ID
+//    - Junction - Generate ID
+//    - Line - Generate ID
+//    - StructureBoundary - Generate ID
+//    - StructureJunction - Generate ID
+//    - StructureLine - Generate ID
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation

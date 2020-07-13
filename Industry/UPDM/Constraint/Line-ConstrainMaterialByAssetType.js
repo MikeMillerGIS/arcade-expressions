@@ -1,7 +1,7 @@
 // Assigned To: PipelineLine
 // Type: Constraint
-// Name: Limit Material By Asset Type for Pipeline Lines
-// Description: Limit values combinations using the fields ASSETGROUP, assettype, material
+// Name: Line - Constrain Material By Asset Type
+// Description: Limit material by asset type for pipeline lines. Limit values combinations using the fields ASSETGROUP, assettype, material
 // Subtypes: All
 // Error Number: 5601
 // Error Message: Incompatible types for ASSETGROUP, assettype, material

@@ -1,7 +1,7 @@
 // Assigned To: PipelineLine
 // Type: Calculation
-// Name: Calculate Material from Asset Type for Pipeline Line
-// Description: Converts the Asset Type codes to Material codes.
+// Name: Line - Asset Type Material to Material Field
+// Description: Calculate Material from Asset Type for Pipeline Line. Converts the Asset Type codes to Material codes.
 // Subtypes: All
 // Field: material
 // Trigger: Insert, Update

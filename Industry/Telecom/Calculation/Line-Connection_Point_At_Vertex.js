@@ -1,7 +1,7 @@
 // Assigned To: CommunicationsLine
 // Type: Calculation
-// Name: Create Connection Points at Vertex
-// Description: Generates connection points at a vertex when within a distance of a structure junction
+// Name: Line - Connection Point At Vertex
+// Description: Create connection points at vertex. Generates connection points at a vertex when within a distance of a structure junction.
 // Subtypes: All
 // Field: Assetid
 // Trigger: Insert

@@ -1,7 +1,7 @@
 // Assigned To: PipelineLine
 // Type: Calculation
-// Name: Cathodic Protection Traceability for Pipeline Lines
-// Description: Set traceability flag for lines assets
+// Name: Line - Cathodic Protection Traceability
+// Description: Cathodic protection traceability for pipeline lines. Set traceability flag for lines assets
 // Subtypes: All
 // Field: cptraceability
 // Trigger: Insert, Update
@@ -10,9 +10,9 @@
 //    - None
 
 // Duplicated in:  This rule may be implemented on other classes, they are listed here to aid you in adjusting those rules when a code change is required.
-//    - Device-Cathodic_Protection_Traceability
-//    - Junction-Cathodic_Protection_Traceability
-//    - Line-Cathodic_Protection_Traceability
+//    - Device - Cathodic Protection Traceability
+//    - Junction - Cathodic Protection Traceability
+//    - Line - Cathodic Protection Traceability
 
 // *************       User Variables       *************
 // This section has the functions and variables that need to be adjusted based on your implementation
